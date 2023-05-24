@@ -78,6 +78,8 @@ func insertWithTxn(_ context.Context, txn *hcmemdb.Txn, tableName string, item a
 	return txn.Insert(tableName, item)
 }
 
+// tsToInt ...
+// Deprecated: move to [storers.tsToInt]
 func tsToInt(ts *timestamppb.Timestamp) int {
 	if ts == nil {
 		return 0
@@ -85,6 +87,8 @@ func tsToInt(ts *timestamppb.Timestamp) int {
 	return int(ts.AsTime().UnixNano())
 }
 
+// intToTs ...
+// Deprecated: move to [storers.intToTs]
 func intToTs(i int) *timestamppb.Timestamp {
 	// zero int val is a nil for us
 	if i == 0 {
