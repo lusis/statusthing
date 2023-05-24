@@ -1,0 +1,192 @@
+syntax = "proto3";
+
+package statusthing.v1;
+
+import "statusthing/v1/types.proto";
+
+option go_package = "github.com/lusis/statusthing/gen/go/statusthing/v1;statusthingv1";
+
+
+service ItemsService {
+    // GetItem gets an Item by its Id
+    rpc GetItem(GetItemRequest) returns (GetItemResponse) {}
+    // ListItems gets all known Items
+    rpc ListItems(ListItemsRequest) returns (ListItemsResponse) {}
+    // AddItem adds a new Item
+    rpc AddItem(AddItemRequest) returns (AddItemResponse) {}
+    // UpdateItem updates an existing Item
+    rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse) {}
+    // DeleteItem deletes an exisiting Item
+    rpc DeleteItem(DeleteItemRequest) returns (DeleteItemResponse) {}
+}
+
+service StatusService {
+    // GetStatus gets a Status by its Id
+    rpc GetStatus(GetStatusRequest) returns (GetStatusResponse) {}
+    // ListStatus gets all known Status
+    rpc ListStatus(ListStatusRequest) returns (ListStatusResponse) {}
+    // AddStatus adds a new status
+    rpc AddStatus(AddStatusRequest) returns (AddStatusResponse) {}
+    // UpdateStatus updates an existing status
+    rpc UpdateStatus(UpdateStatusRequest) returns (UpdateStatusResponse) {}
+    // DeleteStatus deletes a Status
+    rpc DeleteStatus(DeleteStatusRequest) returns (DeleteStatusResponse) {}
+}
+
+service NotesService {
+    // GetNote gets a Note by its Id
+    rpc GetNote(GetNoteRequest) returns (GetNoteResponse) {}
+    // ListNotes gets all Note for an Item
+    rpc ListNotes(ListNotesRequest) returns (ListNotesResponse) {}
+    // AddNote adds a Note to an Item
+    rpc AddNote(AddNoteRequest) returns (AddNoteResponse) {}
+    // UpdateNote updates an existing Note
+    rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse) {}
+    // DeleteNote deletes a Note from an Item
+    rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse) {}
+}
+
+message GetItemRequest {
+    string item_id = 1;
+}
+message GetItemResponse {
+    statusthing.v1.Item item = 1;
+}
+
+message ListItemsRequest {
+    // return results having a status with any of the provided ids
+    repeated string status_ids = 1;
+    // return results having any of the provided [StatusKind] 
+    repeated statusthing.v1.StatusKind kinds = 2;
+    // by default notes are note returned. extended will include notes
+    bool extended = 14;
+}
+
+message ListItemsResponse {
+    repeated Item items = 1;
+}
+
+message AddItemRequest {
+    // the name
+    string name = 1;
+    // the description
+    string description = 2;
+    // set the initial status to the provided status with the provided id
+    string initial_status_id = 3;
+    // create a new status as described and set the initial status to that status
+    statusthing.v1.Status initial_status = 4;
+    // create a new note to add immediately to newly created item
+    string initial_note_text = 5;
+}
+
+message AddItemResponse {
+    statusthing.v1.Item item = 1;
+}
+
+message UpdateItemRequest {
+    // the id of the item to update
+    string item_id = 1;
+    // to change the name
+    string name = 2;
+    // to change the description
+    string description = 3;
+    // to change the status
+    string status_id = 4;
+}
+message UpdateItemResponse {}
+
+message DeleteItemRequest {
+    // the id of the item to delte
+    string item_id = 1;
+}
+message DeleteItemResponse {}
+
+message GetNoteRequest {
+    // the id of the note to get
+    string note_id = 1;
+}
+message GetNoteResponse {
+    statusthing.v1.Note note = 1;
+}
+
+message ListNotesRequest {
+    // the id of the item to get all notes for
+    string item_id = 1;
+}
+message ListNotesResponse {
+    repeated statusthing.v1.Note notes = 1;
+}
+
+message AddNoteRequest {
+    // the id of the item to add the note to
+    string item_id = 1;
+    // the text of the new note
+    string note_text = 2;
+}
+message AddNoteResponse {
+    // the added note
+    statusthing.v1.Note note = 1;
+}
+
+message UpdateNoteRequest {
+    // the id of the note to update
+    string note_id = 1;
+    // the new text for the note
+    string note_text = 2;
+}
+message UpdateNoteResponse {}
+
+message DeleteNoteRequest {
+    // the id of the note to delete
+    string note_id = 1;
+}
+message DeleteNoteResponse {}
+
+
+message GetStatusRequest {
+    // the id of the status to get
+    string status_id = 1;
+}
+message GetStatusResponse {
+    statusthing.v1.Status status = 1;
+}
+message ListStatusRequest {
+    // return results having any of the provided [StatusKind] 
+    repeated statusthing.v1.StatusKind kinds = 1;
+}
+message ListStatusResponse {
+    repeated statusthing.v1.Status statuses = 1;
+}
+message AddStatusRequest {
+    // the name of the new status
+    string name = 1;
+    // the optional description of the new status
+    string description = 2;
+    // the optional color of the new status
+    string color = 3;
+    // the kind of the new status
+    statusthing.v1.StatusKind kind = 4;
+}
+message AddStatusResponse {
+    statusthing.v1.Status status = 1;
+}
+message UpdateStatusRequest {
+    // id of the status to update
+    string status_id = 1;
+    // new name for the status
+    string name = 2;
+    // new description for the status
+    string description = 3;
+    // new color for the status
+    string color = 4;
+    // new kind for the status
+    statusthing.v1.StatusKind kind = 5;
+}
+
+message UpdateStatusResponse {}
+
+message DeleteStatusRequest {
+    // id of the status to delete
+    string status_id = 1;
+}
+message DeleteStatusResponse {}

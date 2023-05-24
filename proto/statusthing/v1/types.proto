@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package statusthing.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/lusis/statusthing/gen/go/statusthing/v1;statusthingv1";
+
+// Item represents a status page entry
+message Item {
+    // the unique identifier
+    string id = 1;
+    // the name
+    string name = 2;
+    // the description
+    string description = 3;
+    // the status
+    Status status = 4;
+    // any associated notes
+    repeated Note notes = 5;
+
+    Timestamps timestamps = 15;
+}
+
+// Status represents the state a service can be in
+// Status is opaque to the system
+message Status {
+    // the unique id of the status
+    string id = 1;
+    // the name of the status
+    string name = 2;
+    // friendly description of the status
+    string description = 3;
+    // how should the status be represented visually
+    string color = 4;
+    // the kind of status
+    StatusKind kind = 5;
+    
+    Timestamps timestamps = 15; 
+}
+
+// Note represents a message attached to a service
+message Note {
+    string id = 1;
+    string text = 2;
+
+    Timestamps timestamps = 15;
+}
+
+// StatusKind are enums for different unique states a thing could be in
+enum StatusKind {
+    STATUS_KIND_UNKNOWN = 0;
+    STATUS_KIND_UP = 1;
+    STATUS_KIND_DOWN = 2;
+    STATUS_KIND_WARNING = 3;
+    STATUS_KIND_UNAVAILABLE = 4;
+    STATUS_KIND_AVAILABLE = 5;
+    STATUS_KIND_INVESTIGATING = 6;
+    STATUS_KIND_OBSERVING = 7;
+    STATUS_KIND_CREATED = 8;
+    STATUS_KIND_ONLINE = 9;
+    STATUS_KIND_OFFLINE = 10;
+    STATUS_KIND_DECOMM = 11;
+}
+
+message Timestamps {
+    google.protobuf.Timestamp created = 1;
+    google.protobuf.Timestamp updated = 2;
+    google.protobuf.Timestamp deleted = 3;
+}
