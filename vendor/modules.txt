@@ -9,6 +9,17 @@ github.com/bufbuild/connect-grpcreflect-go/internal/gen/go/connectext/grpc/refle
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
+# github.com/doug-martin/goqu/v9 v9.18.0
+## explicit; go 1.12
+github.com/doug-martin/goqu/v9
+github.com/doug-martin/goqu/v9/dialect/sqlite3
+github.com/doug-martin/goqu/v9/exec
+github.com/doug-martin/goqu/v9/exp
+github.com/doug-martin/goqu/v9/internal/errors
+github.com/doug-martin/goqu/v9/internal/sb
+github.com/doug-martin/goqu/v9/internal/tag
+github.com/doug-martin/goqu/v9/internal/util
+github.com/doug-martin/goqu/v9/sqlgen
 # github.com/dustin/go-humanize v1.0.1
 ## explicit; go 1.16
 github.com/dustin/go-humanize

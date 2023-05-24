@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/bufbuild/connect-go v1.7.0
+	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/net v0.10.0
 	google.golang.org/grpc v1.55.0
