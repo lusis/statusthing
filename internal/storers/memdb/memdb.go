@@ -6,7 +6,7 @@ import (
 
 	hcmemdb "github.com/hashicorp/go-memdb"
 
-	"github.com/lusis/statusthing/internal/errors"
+	"github.com/lusis/statusthing/internal/serrors"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -38,7 +38,7 @@ func deleteWithTxn(_ context.Context, txn *hcmemdb.Txn, tableName string, item a
 	err := txn.Delete(tableName, item)
 	if err != nil {
 		if err == hcmemdb.ErrNotFound {
-			return errors.ErrNotFound
+			return serrors.ErrNotFound
 		}
 		return err
 	}
@@ -49,12 +49,12 @@ func getWithTxn(_ context.Context, txn *hcmemdb.Txn, tableName string, index str
 	res, err := txn.Get(tableName, index, args...)
 	if err != nil {
 		if err == hcmemdb.ErrNotFound {
-			return nil, errors.ErrNotFound
+			return nil, serrors.ErrNotFound
 		}
 		return nil, err
 	}
 	if res == nil {
-		return nil, errors.ErrNotFound
+		return nil, serrors.ErrNotFound
 	}
 	return res, nil
 }
@@ -64,12 +64,12 @@ func firstWithTxn(_ context.Context, txn *hcmemdb.Txn, tableName string, index s
 	res, err := txn.First(tableName, index, args...)
 	if err != nil {
 		if err == hcmemdb.ErrNotFound {
-			return nil, errors.ErrNotFound
+			return nil, serrors.ErrNotFound
 		}
 		return nil, err
 	}
 	if res == nil {
-		return nil, errors.ErrNotFound
+		return nil, serrors.ErrNotFound
 	}
 	return res, nil
 }

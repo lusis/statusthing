@@ -10,8 +10,8 @@ import (
 	"github.com/go-chi/chi"
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	v1connect "github.com/lusis/statusthing/gen/go/statusthing/v1/statusthingv1connect"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/services"
 	"github.com/lusis/statusthing/internal/storers/memdb"
 
@@ -28,7 +28,7 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 	t.Run("nil-svc", func(t *testing.T) {
 		res, err := NewAPIHandler(nil)
-		require.ErrorIs(t, err, errors.ErrNilVal)
+		require.ErrorIs(t, err, serrors.ErrNilVal)
 		require.Nil(t, res)
 	})
 }
@@ -82,7 +82,7 @@ func TestAddStatus(t *testing.T) {
 		}))
 
 		// assert
-		require.ErrorIs(t, err, errors.ErrEmptyString)
+		require.ErrorIs(t, err, serrors.ErrEmptyString)
 		require.Nil(t, res)
 	})
 }
@@ -181,7 +181,7 @@ func TestUpdateStatus(t *testing.T) {
 			Color:       "new-color",
 			Kind:        statusthingv1.StatusKind_STATUS_KIND_DOWN,
 		}))
-		require.ErrorIs(t, uerr, errors.ErrNotFound)
+		require.ErrorIs(t, uerr, serrors.ErrNotFound)
 	})
 }
 func TestDeleteStatus(t *testing.T) {
@@ -213,7 +213,7 @@ func TestDeleteStatus(t *testing.T) {
 		req := connect.NewRequest(&statusthingv1.DeleteStatusRequest{StatusId: "not-a-valid-status"})
 
 		delres, delerr := api.DeleteStatus(ctx, req)
-		require.ErrorIs(t, delerr, errors.ErrNotFound)
+		require.ErrorIs(t, delerr, serrors.ErrNotFound)
 		require.Nil(t, delres)
 	})
 }
@@ -431,7 +431,7 @@ func TestAddItem(t *testing.T) {
 					},
 				},
 			},
-			err: errors.ErrNotFound,
+			err: serrors.ErrNotFound,
 		},
 		"with-new-status": {
 			items: []testItem{
@@ -594,7 +594,7 @@ func TestUpdateItem(t *testing.T) {
 		}))
 
 		// assert
-		require.ErrorIs(t, err2, errors.ErrNotFound)
+		require.ErrorIs(t, err2, serrors.ErrNotFound)
 	})
 }
 func TestDeleteItem(t *testing.T) {
@@ -628,7 +628,7 @@ func TestDeleteItem(t *testing.T) {
 		delres, delerr := api.DeleteItem(ctx, connect.NewRequest(&statusthingv1.DeleteItemRequest{
 			ItemId: "not-there",
 		}))
-		require.ErrorIs(t, delerr, errors.ErrNotFound)
+		require.ErrorIs(t, delerr, serrors.ErrNotFound)
 		require.Nil(t, delres)
 	})
 }
@@ -664,7 +664,7 @@ func TestGetNotes(t *testing.T) {
 		res, err := api.ListNotes(ctx, connect.NewRequest(&statusthingv1.ListNotesRequest{ItemId: t.Name()}))
 
 		// assert
-		require.ErrorIs(t, err, errors.ErrNotFound)
+		require.ErrorIs(t, err, serrors.ErrNotFound)
 		require.Nil(t, res)
 	})
 }
@@ -699,7 +699,7 @@ func TestAddNote(t *testing.T) {
 		res, err := api.AddNote(ctx, connect.NewRequest(&statusthingv1.AddNoteRequest{ItemId: "invalid-yall", NoteText: t.Name()}))
 
 		// assert
-		require.ErrorIs(t, err, errors.ErrNotFound)
+		require.ErrorIs(t, err, serrors.ErrNotFound)
 		require.Nil(t, res)
 	})
 }
@@ -737,7 +737,7 @@ func TestDeleteNote(t *testing.T) {
 		res, err := api.DeleteNote(ctx, connect.NewRequest(&statusthingv1.DeleteNoteRequest{NoteId: t.Name()}))
 
 		// assert
-		require.ErrorIs(t, err, errors.ErrNotFound)
+		require.ErrorIs(t, err, serrors.ErrNotFound)
 		require.Nil(t, res)
 	})
 }
@@ -775,7 +775,7 @@ func TestUpdateNote(t *testing.T) {
 		res, err := api.UpdateNote(ctx, connect.NewRequest(&statusthingv1.UpdateNoteRequest{NoteId: t.Name(), NoteText: t.Name()}))
 
 		// assert
-		require.ErrorIs(t, err, errors.ErrNotFound)
+		require.ErrorIs(t, err, serrors.ErrNotFound)
 		require.Nil(t, res)
 	})
 }
@@ -814,7 +814,7 @@ func TestGetNote(t *testing.T) {
 		res, err := api.GetNote(ctx, connect.NewRequest(&statusthingv1.GetNoteRequest{NoteId: t.Name()}))
 
 		// assert
-		require.ErrorIs(t, err, errors.ErrNotFound)
+		require.ErrorIs(t, err, serrors.ErrNotFound)
 		require.Nil(t, res)
 	})
 }
@@ -849,7 +849,7 @@ func TestGetItem(t *testing.T) {
 		res, err := api.GetItem(ctx, connect.NewRequest(&statusthingv1.GetItemRequest{
 			ItemId: t.Name(),
 		}))
-		require.ErrorIs(t, err, errors.ErrNotFound)
+		require.ErrorIs(t, err, serrors.ErrNotFound)
 		require.Nil(t, res)
 	})
 }
@@ -860,21 +860,21 @@ func apiTestSetup(t *testing.T) (*APIHandler, *http.Client, *httptest.Server, er
 		return nil, nil, nil, err
 	}
 	if store == nil {
-		return nil, nil, nil, errors.ErrNilVal
+		return nil, nil, nil, serrors.ErrNilVal
 	}
 	sts, err := services.NewStatusThingService(store)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 	if sts == nil {
-		return nil, nil, nil, errors.ErrNilVal
+		return nil, nil, nil, serrors.ErrNilVal
 	}
 	api, err := NewAPIHandler(sts)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 	if api == nil {
-		return nil, nil, nil, errors.ErrNilVal
+		return nil, nil, nil, serrors.ErrNilVal
 	}
 	ispath, ishandler := v1connect.NewItemsServiceHandler(api)
 	spath, shandler := v1connect.NewStatusServiceHandler(api)

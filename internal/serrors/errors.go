@@ -1,5 +1,5 @@
-// Package errors contains all custom error types
-package errors
+// Package serrors contains all custom error types
+package serrors
 
 import "fmt"
 

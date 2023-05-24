@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
+	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/testutils"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -31,11 +31,11 @@ func TestNew(t *testing.T) {
 		},
 		"itemID-empty": {
 			opts: []FilterOption{WithItemID("")},
-			err:  errors.ErrEmptyString,
+			err:  serrors.ErrEmptyString,
 		},
 		"itemID-already-set": {
 			opts: []FilterOption{WithItemID(t.Name()), WithItemID(t.Name())},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"noteID-happy-path": {
 			opts:           []FilterOption{WithNoteID(t.Name())},
@@ -43,15 +43,15 @@ func TestNew(t *testing.T) {
 		},
 		"noteID-empty": {
 			opts: []FilterOption{WithNoteID("")},
-			err:  errors.ErrEmptyString,
+			err:  serrors.ErrEmptyString,
 		},
 		"noteID-already-set": {
 			opts: []FilterOption{WithNoteID(t.Name()), WithNoteID(t.Name())},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"statusID-status-already-set": {
 			opts: []FilterOption{WithStatus(&statusthingv1.Status{}), WithStatusID(t.Name())},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"statusID-happy-path": {
 			opts:           []FilterOption{WithStatusID(t.Name())},
@@ -59,15 +59,15 @@ func TestNew(t *testing.T) {
 		},
 		"statusID-empty": {
 			opts: []FilterOption{WithStatusID("")},
-			err:  errors.ErrEmptyString,
+			err:  serrors.ErrEmptyString,
 		},
 		"statusID-already-set": {
 			opts: []FilterOption{WithStatusID(t.Name()), WithStatusID(t.Name())},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"status-statusid-conflict": {
 			opts: []FilterOption{WithStatusID(t.Name()), WithStatus(testutils.MakeStatus(t.Name()))},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"status-happypath": {
 			opts:           []FilterOption{WithStatus(&statusthingv1.Status{Id: t.Name()})},
@@ -75,11 +75,11 @@ func TestNew(t *testing.T) {
 		},
 		"status-nil-status": {
 			opts: []FilterOption{WithStatus(nil)},
-			err:  errors.ErrNilVal,
+			err:  serrors.ErrNilVal,
 		},
 		"status-already-set": {
 			opts: []FilterOption{WithStatus(&statusthingv1.Status{Id: t.Name()}), WithStatus(&statusthingv1.Status{Id: t.Name()})},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"color-happy-path": {
 			opts:           []FilterOption{WithColor(t.Name())},
@@ -87,11 +87,11 @@ func TestNew(t *testing.T) {
 		},
 		"color-empty": {
 			opts: []FilterOption{WithColor("")},
-			err:  errors.ErrEmptyString,
+			err:  serrors.ErrEmptyString,
 		},
 		"color-already-set": {
 			opts: []FilterOption{WithColor(t.Name()), WithColor(t.Name())},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"description-happy-path": {
 			opts:           []FilterOption{WithDescription(t.Name())},
@@ -99,11 +99,11 @@ func TestNew(t *testing.T) {
 		},
 		"description-empty": {
 			opts: []FilterOption{WithDescription("")},
-			err:  errors.ErrEmptyString,
+			err:  serrors.ErrEmptyString,
 		},
 		"description-already-set": {
 			opts: []FilterOption{WithDescription(t.Name()), WithDescription(t.Name())},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"statuskind-happy-path": {
 			opts:           []FilterOption{WithStatusKind(statusthingv1.StatusKind_STATUS_KIND_AVAILABLE)},
@@ -111,11 +111,11 @@ func TestNew(t *testing.T) {
 		},
 		"statuskind-zero-val": {
 			opts: []FilterOption{WithStatusKind(statusthingv1.StatusKind_STATUS_KIND_UNKNOWN)},
-			err:  errors.ErrEmptyEnum,
+			err:  serrors.ErrEmptyEnum,
 		},
 		"statuskind-already-set": {
 			opts: []FilterOption{WithStatusKind(statusthingv1.StatusKind_STATUS_KIND_AVAILABLE), WithStatusKind(statusthingv1.StatusKind_STATUS_KIND_DOWN)},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"timestamps-happy-path": {
 			opts:           []FilterOption{WithTimestamps(happyTs)},
@@ -123,11 +123,11 @@ func TestNew(t *testing.T) {
 		},
 		"timestamps-zero-val": {
 			opts: []FilterOption{WithTimestamps(nil)},
-			err:  errors.ErrNilVal,
+			err:  serrors.ErrNilVal,
 		},
 		"timestamps-already-set": {
 			opts: []FilterOption{WithTimestamps(&statusthingv1.Timestamps{Created: protonow}), WithTimestamps(&statusthingv1.Timestamps{Created: timestamppb.Now()})},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"statusids-happy-path": {
 			opts:           []FilterOption{WithStatusIDs("1", "2")},
@@ -135,11 +135,11 @@ func TestNew(t *testing.T) {
 		},
 		"statusids-atleastone": {
 			opts: []FilterOption{WithStatusIDs()},
-			err:  errors.ErrAtLeastOne,
+			err:  serrors.ErrAtLeastOne,
 		},
 		"statusids-already-set": {
 			opts: []FilterOption{WithStatusIDs(t.Name()), WithStatusIDs(t.Name())},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"name-happy-path": {
 			opts:           []FilterOption{WithName("1")},
@@ -147,11 +147,11 @@ func TestNew(t *testing.T) {
 		},
 		"name-emptystring": {
 			opts: []FilterOption{WithName("")},
-			err:  errors.ErrEmptyString,
+			err:  serrors.ErrEmptyString,
 		},
 		"name-already-set": {
 			opts: []FilterOption{WithName(t.Name()), WithName(t.Name())},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"note-text-happy-path": {
 			opts:           []FilterOption{WithNoteText("1")},
@@ -159,11 +159,11 @@ func TestNew(t *testing.T) {
 		},
 		"note-text-emptystring": {
 			opts: []FilterOption{WithNoteText("")},
-			err:  errors.ErrEmptyString,
+			err:  serrors.ErrEmptyString,
 		},
 		"note-text-already-set": {
 			opts: []FilterOption{WithNoteText(t.Name()), WithNoteText(t.Name())},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 		"statuskinds-happy-path": {
 			opts:           []FilterOption{WithStatusKinds(statusthingv1.StatusKind_STATUS_KIND_AVAILABLE)},
@@ -171,15 +171,15 @@ func TestNew(t *testing.T) {
 		},
 		"statuskinds-atleastone": {
 			opts: []FilterOption{WithStatusKinds()},
-			err:  errors.ErrAtLeastOne,
+			err:  serrors.ErrAtLeastOne,
 		},
 		"statuskinds-enum-unknown": {
 			opts: []FilterOption{WithStatusKinds(statusthingv1.StatusKind_STATUS_KIND_UNKNOWN)},
-			err:  errors.ErrEmptyEnum,
+			err:  serrors.ErrEmptyEnum,
 		},
 		"statuskinds-already-set": {
 			opts: []FilterOption{WithStatusKinds(statusthingv1.StatusKind_STATUS_KIND_AVAILABLE), WithStatusKinds(statusthingv1.StatusKind_STATUS_KIND_AVAILABLE)},
-			err:  errors.ErrAlreadySet,
+			err:  serrors.ErrAlreadySet,
 		},
 	}
 	for n, tc := range cases {

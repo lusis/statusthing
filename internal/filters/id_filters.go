@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lusis/statusthing/internal/errors"
+	"github.com/lusis/statusthing/internal/serrors"
 )
 
 // WithItemID provides a custom [statusthingv1.StatusThing] id
 func WithItemID(id string) FilterOption {
 	return func(f *Filters) error {
 		if strings.TrimSpace(id) == "" {
-			return fmt.Errorf("item id %w", errors.ErrEmptyString)
+			return fmt.Errorf("item id %w", serrors.ErrEmptyString)
 		}
 		if f.itemID != nil {
-			return fmt.Errorf("item id: %w", errors.ErrAlreadySet)
+			return fmt.Errorf("item id: %w", serrors.ErrAlreadySet)
 		}
 		f.itemID = &id
 		return nil
@@ -32,13 +32,13 @@ func (f *Filters) ItemID() string {
 func WithStatusID(id string) FilterOption {
 	return func(f *Filters) error {
 		if strings.TrimSpace(id) == "" {
-			return fmt.Errorf("status id %w", errors.ErrEmptyString)
+			return fmt.Errorf("status id %w", serrors.ErrEmptyString)
 		}
 		if f.statusID != nil {
-			return fmt.Errorf("status id: %w", errors.ErrAlreadySet)
+			return fmt.Errorf("status id: %w", serrors.ErrAlreadySet)
 		}
 		if f.status != nil {
-			return fmt.Errorf("status already set: %w", errors.ErrAlreadySet)
+			return fmt.Errorf("status already set: %w", serrors.ErrAlreadySet)
 		}
 		f.statusID = &id
 		return nil
@@ -56,10 +56,10 @@ func (f *Filters) StatusID() string {
 func WithNoteID(id string) FilterOption {
 	return func(f *Filters) error {
 		if strings.TrimSpace(id) == "" {
-			return fmt.Errorf("note id: %w", errors.ErrEmptyString)
+			return fmt.Errorf("note id: %w", serrors.ErrEmptyString)
 		}
 		if f.noteID != nil {
-			return fmt.Errorf("note id: %w", errors.ErrAlreadySet)
+			return fmt.Errorf("note id: %w", serrors.ErrAlreadySet)
 		}
 		f.noteID = &id
 		return nil
@@ -80,10 +80,10 @@ func (f *Filters) NoteID() string {
 func WithStatusIDs(statusIDs ...string) FilterOption {
 	return func(f *Filters) error {
 		if len(statusIDs) == 0 {
-			return fmt.Errorf("statusIDs %w", errors.ErrAtLeastOne)
+			return fmt.Errorf("statusIDs %w", serrors.ErrAtLeastOne)
 		}
 		if len(f.statusIDs) != 0 {
-			return fmt.Errorf("statusIDs: %w", errors.ErrAlreadySet)
+			return fmt.Errorf("statusIDs: %w", serrors.ErrAlreadySet)
 		}
 		f.statusIDs = statusIDs
 

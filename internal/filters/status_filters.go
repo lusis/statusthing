@@ -4,20 +4,20 @@ import (
 	"fmt"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
+	"github.com/lusis/statusthing/internal/serrors"
 )
 
 // WithStatus provides a custom [statusthingv1.Status]
 func WithStatus(s *statusthingv1.Status) FilterOption {
 	return func(f *Filters) error {
 		if s == nil {
-			return fmt.Errorf("status: %w", errors.ErrNilVal)
+			return fmt.Errorf("status: %w", serrors.ErrNilVal)
 		}
 		if f.status != nil {
-			return fmt.Errorf("status: %w", errors.ErrAlreadySet)
+			return fmt.Errorf("status: %w", serrors.ErrAlreadySet)
 		}
 		if f.statusID != nil {
-			return fmt.Errorf("status id already set: %w", errors.ErrAlreadySet)
+			return fmt.Errorf("status id already set: %w", serrors.ErrAlreadySet)
 		}
 		f.status = s
 		return nil

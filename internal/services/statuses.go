@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 
 	"github.com/segmentio/ksuid"
 )
@@ -18,13 +18,13 @@ import (
 // - [filters.WithDescription]
 func (sts *StatusThingService) NewStatus(ctx context.Context, statusName string, statusKind statusthingv1.StatusKind, opts ...filters.FilterOption) (*statusthingv1.Status, error) {
 	if sts.store == nil {
-		return nil, fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	if strings.TrimSpace(statusName) == "" {
-		return nil, fmt.Errorf("statusName: %w", errors.ErrEmptyString)
+		return nil, fmt.Errorf("statusName: %w", serrors.ErrEmptyString)
 	}
 	if statusKind == statusthingv1.StatusKind_STATUS_KIND_UNKNOWN {
-		return nil, fmt.Errorf("statusKind: %w", errors.ErrEmptyEnum)
+		return nil, fmt.Errorf("statusKind: %w", serrors.ErrEmptyEnum)
 	}
 	f, err := filters.New(opts...)
 	if err != nil {
@@ -55,13 +55,13 @@ func (sts *StatusThingService) NewStatus(ctx context.Context, statusName string,
 // EditStatus updates a [statusthingv1.tatus] by its id
 func (sts *StatusThingService) EditStatus(ctx context.Context, statusID string, opts ...filters.FilterOption) error {
 	if sts.store == nil {
-		return fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	if len(opts) == 0 {
-		return fmt.Errorf("opts: %w", errors.ErrAtLeastOne)
+		return fmt.Errorf("opts: %w", serrors.ErrAtLeastOne)
 	}
 	if strings.TrimSpace(statusID) == "" {
-		return fmt.Errorf("statusName: %w", errors.ErrEmptyString)
+		return fmt.Errorf("statusName: %w", serrors.ErrEmptyString)
 	}
 
 	return sts.store.UpdateStatus(ctx, statusID, opts...)
@@ -75,10 +75,10 @@ func (sts *StatusThingService) AllStatuses(ctx context.Context, opts ...filters.
 // DeleteStatus removes a [statusthingv1.Status] by its unique id
 func (sts *StatusThingService) DeleteStatus(ctx context.Context, statusID string) error {
 	if statusID == "" {
-		return fmt.Errorf("statusID: %w", errors.ErrEmptyString)
+		return fmt.Errorf("statusID: %w", serrors.ErrEmptyString)
 	}
 	if sts.store == nil {
-		return fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	return sts.store.DeleteStatus(ctx, statusID)
 }
@@ -86,7 +86,7 @@ func (sts *StatusThingService) DeleteStatus(ctx context.Context, statusID string
 // GetStatus gets a [statusthingv1.Status] by id
 func (sts *StatusThingService) GetStatus(ctx context.Context, statusID string) (*statusthingv1.Status, error) {
 	if sts.store == nil {
-		return nil, fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	return sts.store.GetStatus(ctx, statusID)
 }

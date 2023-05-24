@@ -13,7 +13,7 @@ import (
 	"golang.org/x/exp/slog"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
+	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/storers"
 )
 
@@ -30,7 +30,7 @@ type StatusThingService struct {
 // NewStatusThingService returns a new [StatusThingService]
 func NewStatusThingService(store storers.StatusThingStorer, opts ...ServiceOption) (*StatusThingService, error) {
 	if store == nil {
-		return nil, fmt.Errorf("nil store provided: %w", errors.ErrStoreUnavailable)
+		return nil, fmt.Errorf("nil store provided: %w", serrors.ErrStoreUnavailable)
 	}
 	svc := &StatusThingService{
 		l:               &sync.RWMutex{},

@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/testutils"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -24,36 +24,36 @@ func TestDbNoteFromProto(t *testing.T) {
 		validationFunc func(*testing.T, *dbNote, *statusthingv1.Note)
 	}{
 		"nil-note": {
-			err: errors.ErrNilVal,
+			err: serrors.ErrNilVal,
 		},
 		"missing-item-id": {
 			protoNote: &statusthingv1.Note{},
-			err:       errors.ErrEmptyString,
+			err:       serrors.ErrEmptyString,
 		},
 		"missing-note-id": {
 			protoNote: &statusthingv1.Note{},
 			itemID:    t.Name(),
-			err:       errors.ErrEmptyString,
+			err:       serrors.ErrEmptyString,
 		},
 		"missing-note-text": {
 			protoNote: &statusthingv1.Note{Id: t.Name()},
 			itemID:    t.Name(),
-			err:       errors.ErrEmptyString,
+			err:       serrors.ErrEmptyString,
 		},
 		"missing-timestamps": {
 			protoNote: &statusthingv1.Note{Id: t.Name(), Text: t.Name()},
 			itemID:    t.Name(),
-			err:       errors.ErrNilVal,
+			err:       serrors.ErrNilVal,
 		},
 		"invalid-created": {
 			protoNote: &statusthingv1.Note{Id: t.Name(), Text: t.Name(), Timestamps: &statusthingv1.Timestamps{Updated: pbNow}},
 			itemID:    t.Name(),
-			err:       errors.ErrInvalidData,
+			err:       serrors.ErrInvalidData,
 		},
 		"invalid-updated": {
 			protoNote: &statusthingv1.Note{Id: t.Name(), Text: t.Name(), Timestamps: &statusthingv1.Timestamps{Created: pbNow}},
 			itemID:    t.Name(),
-			err:       errors.ErrInvalidData,
+			err:       serrors.ErrInvalidData,
 		},
 		"happy-path": {
 			protoNote: &statusthingv1.Note{Id: t.Name(), Text: t.Name(), Timestamps: &statusthingv1.Timestamps{Created: pbNow, Updated: pbNow, Deleted: pbNow}},
@@ -109,19 +109,19 @@ func TestDbNoteToProto(t *testing.T) {
 	}{
 		"missing-id": {
 			dbNote: &dbNote{},
-			err:    errors.ErrInvalidData,
+			err:    serrors.ErrInvalidData,
 		},
 		"missing-note-data": {
 			dbNote: &dbNote{ID: t.Name()},
-			err:    errors.ErrInvalidData,
+			err:    serrors.ErrInvalidData,
 		},
 		"missing-created": {
 			dbNote: &dbNote{ID: t.Name(), NoteData: t.Name(), Updated: intNow},
-			err:    errors.ErrInvalidData,
+			err:    serrors.ErrInvalidData,
 		},
 		"missing-updated": {
 			dbNote: &dbNote{ID: t.Name(), NoteData: t.Name(), Created: intNow},
-			err:    errors.ErrInvalidData,
+			err:    serrors.ErrInvalidData,
 		},
 		"happy-path": {
 			dbNote: &dbNote{ID: t.Name(), NoteData: t.Name(), Updated: intNow, Created: intNow, Deleted: intNow},
@@ -207,11 +207,11 @@ func TestStoreNoteErrors(t *testing.T) {
 		"nil-note": {
 			note:   nil,
 			itemID: "foo",
-			err:    errors.ErrNilVal,
+			err:    serrors.ErrNilVal,
 		},
 		"missing-item-id": {
 			note: &statusthingv1.Note{},
-			err:  errors.ErrEmptyString,
+			err:  serrors.ErrEmptyString,
 		},
 	}
 	for n, tc := range testcases {
