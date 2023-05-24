@@ -6,8 +6,8 @@ import (
 	"time"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/storers/memdb"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -17,7 +17,7 @@ func TestAddNote(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
 		_, err := sts.NewNote(context.TODO(), "", "")
-		require.ErrorIs(t, err, errors.ErrStoreUnavailable)
+		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("happy-path", func(t *testing.T) {
 		sts, err := NewStatusThingService(&testStatusThingStore{
@@ -36,7 +36,7 @@ func TestAddNote(t *testing.T) {
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
 		res, err := sts.NewNote(context.TODO(), "", t.Name())
-		require.ErrorIs(t, err, errors.ErrEmptyString)
+		require.ErrorIs(t, err, serrors.ErrEmptyString)
 		require.Nil(t, res)
 	})
 	t.Run("missing-note-text", func(t *testing.T) {
@@ -46,7 +46,7 @@ func TestAddNote(t *testing.T) {
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
 		res, err := sts.NewNote(context.TODO(), t.Name(), "")
-		require.ErrorIs(t, err, errors.ErrEmptyString)
+		require.ErrorIs(t, err, serrors.ErrEmptyString)
 		require.Nil(t, res)
 	})
 }
@@ -55,7 +55,7 @@ func TestEditNote(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
 		err := sts.EditNote(context.TODO(), "", "")
-		require.ErrorIs(t, err, errors.ErrStoreUnavailable)
+		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("happy-path", func(t *testing.T) {
 		sts, err := NewStatusThingService(&testStatusThingStore{
@@ -88,7 +88,7 @@ func TestEditNote(t *testing.T) {
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
 		err = sts.EditNote(context.TODO(), "", t.Name())
-		require.ErrorIs(t, err, errors.ErrEmptyString)
+		require.ErrorIs(t, err, serrors.ErrEmptyString)
 	})
 	t.Run("missing-note-text", func(t *testing.T) {
 		sts, err := NewStatusThingService(&testStatusThingStore{
@@ -97,14 +97,14 @@ func TestEditNote(t *testing.T) {
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
 		err = sts.EditNote(context.TODO(), t.Name(), "")
-		require.ErrorIs(t, err, errors.ErrEmptyString)
+		require.ErrorIs(t, err, serrors.ErrEmptyString)
 	})
 }
 func TestRemoveNote(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
 		err := sts.DeleteNote(context.TODO(), "")
-		require.ErrorIs(t, err, errors.ErrStoreUnavailable)
+		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("happy-path", func(t *testing.T) {
 		sts, err := NewStatusThingService(&testStatusThingStore{
@@ -122,7 +122,7 @@ func TestRemoveNote(t *testing.T) {
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
 		err = sts.DeleteNote(context.TODO(), "")
-		require.ErrorIs(t, err, errors.ErrEmptyString)
+		require.ErrorIs(t, err, serrors.ErrEmptyString)
 	})
 }
 
@@ -131,14 +131,14 @@ func TestAllNotes(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
 		res, err := sts.AllNotes(ctx, t.Name())
-		require.ErrorIs(t, err, errors.ErrStoreUnavailable)
+		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 		require.Nil(t, res)
 	})
 	t.Run("missing-itemid", func(t *testing.T) {
 		mem, _ := memdb.New()
 		sts := &StatusThingService{store: mem}
 		res, err := sts.AllNotes(ctx, "")
-		require.ErrorIs(t, err, errors.ErrEmptyString)
+		require.ErrorIs(t, err, serrors.ErrEmptyString)
 		require.Nil(t, res)
 	})
 }
@@ -148,14 +148,14 @@ func TestGetNote(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
 		res, err := sts.GetNote(ctx, t.Name())
-		require.ErrorIs(t, err, errors.ErrStoreUnavailable)
+		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 		require.Nil(t, res)
 	})
 	t.Run("missing-itemid", func(t *testing.T) {
 		mem, _ := memdb.New()
 		sts := &StatusThingService{store: mem}
 		res, err := sts.GetNote(ctx, "")
-		require.ErrorIs(t, err, errors.ErrEmptyString)
+		require.ErrorIs(t, err, serrors.ErrEmptyString)
 		require.Nil(t, res)
 	})
 	t.Run("happy-path", func(t *testing.T) {

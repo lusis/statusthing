@@ -10,8 +10,8 @@ import (
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	v1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 )
 
 const (
@@ -30,10 +30,10 @@ type dbNote struct {
 
 func (n *dbNote) toProto() (*v1.Note, error) {
 	if n.ID == "" {
-		return nil, errors.ErrInvalidData
+		return nil, serrors.ErrInvalidData
 	}
 	if n.NoteData == "" {
-		return nil, errors.ErrInvalidData
+		return nil, serrors.ErrInvalidData
 	}
 	note := &v1.Note{
 		Id:         n.ID,
@@ -43,11 +43,11 @@ func (n *dbNote) toProto() (*v1.Note, error) {
 	// timestamps
 	created, updated, deleted := intToTs(n.Created), intToTs(n.Updated), intToTs(n.Deleted)
 	if !created.IsValid() {
-		return nil, fmt.Errorf("created: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("created: %w", serrors.ErrInvalidData)
 	}
 	note.Timestamps.Created = created
 	if !updated.IsValid() {
-		return nil, fmt.Errorf("updated: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("updated: %w", serrors.ErrInvalidData)
 	}
 	note.Timestamps.Updated = updated
 
@@ -59,25 +59,25 @@ func (n *dbNote) toProto() (*v1.Note, error) {
 
 func noteFromProto(pn *statusthingv1.Note, itemID string) (*dbNote, error) {
 	if pn == nil {
-		return nil, fmt.Errorf("note: %w", errors.ErrNilVal)
+		return nil, fmt.Errorf("note: %w", serrors.ErrNilVal)
 	}
 	if itemID == "" {
-		return nil, errors.ErrEmptyString
+		return nil, serrors.ErrEmptyString
 	}
 	if pn.GetId() == "" {
-		return nil, fmt.Errorf("id: %w", errors.ErrEmptyString)
+		return nil, fmt.Errorf("id: %w", serrors.ErrEmptyString)
 	}
 	if pn.GetText() == "" {
-		return nil, fmt.Errorf("text: %w", errors.ErrEmptyString)
+		return nil, fmt.Errorf("text: %w", serrors.ErrEmptyString)
 	}
 	if pn.GetTimestamps() == nil {
-		return nil, fmt.Errorf("timestamps: %w", errors.ErrNilVal)
+		return nil, fmt.Errorf("timestamps: %w", serrors.ErrNilVal)
 	}
 	if !pn.GetTimestamps().GetCreated().IsValid() {
-		return nil, errors.ErrInvalidData
+		return nil, serrors.ErrInvalidData
 	}
 	if !pn.GetTimestamps().GetUpdated().IsValid() {
-		return nil, errors.ErrInvalidData
+		return nil, serrors.ErrInvalidData
 	}
 	n := &dbNote{
 		ID:       pn.GetId(),
@@ -135,7 +135,7 @@ func (s *StatusThingStore) GetNote(ctx context.Context, noteID string) (*v1.Note
 
 	note, ok := res.(*dbNote)
 	if !ok {
-		return nil, errors.ErrInvalidData
+		return nil, serrors.ErrInvalidData
 	}
 
 	pbnote, err := note.toProto()
@@ -148,10 +148,10 @@ func (s *StatusThingStore) GetNote(ctx context.Context, noteID string) (*v1.Note
 // StoreNote stores the provided [statusthingv1.Note] associated with the provided [statusthingv1.Item] by its id
 func (s *StatusThingStore) StoreNote(ctx context.Context, note *v1.Note, itemID string) (*v1.Note, error) {
 	if note == nil {
-		return nil, errors.ErrNilVal
+		return nil, serrors.ErrNilVal
 	}
 	if strings.TrimSpace(itemID) == "" {
-		return nil, errors.ErrEmptyString
+		return nil, serrors.ErrEmptyString
 	}
 	if _, err := s.GetItem(ctx, itemID); err != nil {
 		return nil, err
@@ -178,7 +178,7 @@ func (s *StatusThingStore) FindNotes(ctx context.Context, itemID string, opts ..
 	}
 
 	if itemID == "" {
-		return nil, errors.ErrEmptyString
+		return nil, serrors.ErrEmptyString
 	}
 
 	if _, err := s.GetItem(ctx, itemID); err != nil {
@@ -196,10 +196,10 @@ func (s *StatusThingStore) FindNotes(ctx context.Context, itemID string, opts ..
 // - [filters.WithTimestamps]: for setting custom timestamps
 func (s *StatusThingStore) UpdateNote(ctx context.Context, noteID string, opts ...filters.FilterOption) error {
 	if len(opts) == 0 {
-		return errors.ErrAtLeastOne
+		return serrors.ErrAtLeastOne
 	}
 	if strings.TrimSpace(noteID) == "" {
-		return errors.ErrEmptyString
+		return serrors.ErrEmptyString
 	}
 	f, err := filters.New(opts...)
 	if err != nil {
@@ -217,7 +217,7 @@ func (s *StatusThingStore) UpdateNote(ctx context.Context, noteID string, opts .
 
 	note, ok := existing.(*dbNote)
 	if !ok {
-		return errors.ErrInvalidData
+		return serrors.ErrInvalidData
 	}
 	pnote, err := note.toProto()
 	if err != nil {
@@ -250,7 +250,7 @@ func (s *StatusThingStore) DeleteNote(ctx context.Context, noteID string) error 
 
 func getNotesWithTxn(ctx context.Context, txn *hcmemdb.Txn, itemID string, opts ...filters.FilterOption) ([]*v1.Note, error) {
 	if txn == nil {
-		return nil, errors.ErrNilVal
+		return nil, serrors.ErrNilVal
 	}
 	// we don't use any options right now for notes
 	_, err := filters.New(opts...)
@@ -259,7 +259,7 @@ func getNotesWithTxn(ctx context.Context, txn *hcmemdb.Txn, itemID string, opts 
 	}
 
 	if itemID == "" {
-		return nil, errors.ErrEmptyString
+		return nil, serrors.ErrEmptyString
 	}
 
 	// we get by item id here
@@ -271,7 +271,7 @@ func getNotesWithTxn(ctx context.Context, txn *hcmemdb.Txn, itemID string, opts 
 	for obj := res.Next(); obj != nil; obj = res.Next() {
 		note, ok := obj.(*dbNote)
 		if !ok {
-			return nil, errors.ErrInvalidData
+			return nil, serrors.ErrInvalidData
 		}
 
 		pbnote, err := note.toProto()

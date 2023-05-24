@@ -9,8 +9,8 @@ import (
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	v1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 )
 
 const (
@@ -74,22 +74,22 @@ type dbStatus struct {
 
 func (ms *dbStatus) toProto() (*statusthingv1.Status, error) {
 	if ms.ID == "" {
-		return nil, fmt.Errorf("id: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("id: %w", serrors.ErrInvalidData)
 	}
 	if ms.Name == "" {
-		return nil, fmt.Errorf("name: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("name: %w", serrors.ErrInvalidData)
 	}
 
 	if ms.Kind == "" || ms.Kind == statusthingv1.StatusKind_STATUS_KIND_UNKNOWN.String() {
-		return nil, fmt.Errorf("kind: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("kind: %w", serrors.ErrInvalidData)
 	}
 
 	created, updated, deleted := intToTs(ms.Created), intToTs(ms.Updated), intToTs(ms.Deleted)
 	if !created.IsValid() {
-		return nil, fmt.Errorf("created: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("created: %w", serrors.ErrInvalidData)
 	}
 	if !updated.IsValid() {
-		return nil, fmt.Errorf("updated: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("updated: %w", serrors.ErrInvalidData)
 	}
 	status := &statusthingv1.Status{
 		Id:          ms.ID,
@@ -110,26 +110,26 @@ func (ms *dbStatus) toProto() (*statusthingv1.Status, error) {
 }
 func statusFromProto(ps *statusthingv1.Status) (*dbStatus, error) {
 	if ps == nil {
-		return nil, errors.ErrNilVal
+		return nil, serrors.ErrNilVal
 	}
 
 	if ps.GetId() == "" {
-		return nil, errors.ErrEmptyString
+		return nil, serrors.ErrEmptyString
 	}
 	if ps.GetName() == "" {
-		return nil, errors.ErrEmptyString
+		return nil, serrors.ErrEmptyString
 	}
 	if ps.GetTimestamps() == nil {
-		return nil, fmt.Errorf("timestamps: %w", errors.ErrNilVal)
+		return nil, fmt.Errorf("timestamps: %w", serrors.ErrNilVal)
 	}
 	if !ps.GetTimestamps().GetCreated().IsValid() {
-		return nil, fmt.Errorf("created: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("created: %w", serrors.ErrInvalidData)
 	}
 	if !ps.GetTimestamps().GetUpdated().IsValid() {
-		return nil, fmt.Errorf("updated: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("updated: %w", serrors.ErrInvalidData)
 	}
 	if ps.GetKind() == statusthingv1.StatusKind_STATUS_KIND_UNKNOWN {
-		return nil, fmt.Errorf("kind: %w", errors.ErrEmptyEnum)
+		return nil, fmt.Errorf("kind: %w", serrors.ErrEmptyEnum)
 	}
 	ms := &dbStatus{
 		ID:      ps.GetId(),
@@ -178,11 +178,11 @@ func getStatusWithTxn(ctx context.Context, txn *hcmemdb.Txn, statusID string) (*
 		return nil, err
 	}
 	if res == nil {
-		return nil, errors.ErrNotFound
+		return nil, serrors.ErrNotFound
 	}
 	status, ok := res.(*dbStatus)
 	if !ok {
-		return nil, errors.ErrInvalidData
+		return nil, serrors.ErrInvalidData
 	}
 	return status.toProto()
 }
@@ -204,7 +204,7 @@ func (s *StatusThingStore) FindStatus(ctx context.Context, opts ...filters.Filte
 	for obj := res.Next(); obj != nil; obj = res.Next() {
 		statusEntry, ok := obj.(*dbStatus)
 		if !ok {
-			return nil, errors.ErrInvalidData
+			return nil, serrors.ErrInvalidData
 		}
 		// with memdb we filter as we process each results
 		if len(f.StatusKinds()) != 0 {
@@ -236,10 +236,10 @@ func (s *StatusThingStore) FindStatus(ctx context.Context, opts ...filters.Filte
 // - [filters.WithName]: to change the name
 func (s *StatusThingStore) UpdateStatus(ctx context.Context, statusID string, opts ...filters.FilterOption) error {
 	if len(opts) == 0 {
-		return errors.ErrAtLeastOne
+		return serrors.ErrAtLeastOne
 	}
 	if strings.TrimSpace(statusID) == "" {
-		return errors.ErrEmptyString
+		return serrors.ErrEmptyString
 	}
 	f, err := filters.New(opts...)
 	if err != nil {

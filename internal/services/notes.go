@@ -8,20 +8,20 @@ import (
 	"github.com/segmentio/ksuid"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 )
 
 // NewNote adds the provided text as a [statusthingv1.Note] to the [statusthingv1.Item] with the provided id
 func (sts *StatusThingService) NewNote(ctx context.Context, itemID, noteText string) (*statusthingv1.Note, error) {
 	if sts.store == nil {
-		return nil, fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	if strings.TrimSpace(itemID) == "" {
-		return nil, fmt.Errorf("itemID: %w", errors.ErrEmptyString)
+		return nil, fmt.Errorf("itemID: %w", serrors.ErrEmptyString)
 	}
 	if strings.TrimSpace(noteText) == "" {
-		return nil, fmt.Errorf("noteText: %w", errors.ErrEmptyString)
+		return nil, fmt.Errorf("noteText: %w", serrors.ErrEmptyString)
 	}
 	id := ksuid.New().String()
 	note := &statusthingv1.Note{
@@ -37,13 +37,13 @@ func (sts *StatusThingService) NewNote(ctx context.Context, itemID, noteText str
 // [filters.WithTimestamps] to override the timestamps (generally for testing)
 func (sts *StatusThingService) EditNote(ctx context.Context, noteID, noteText string, opts ...filters.FilterOption) error {
 	if sts.store == nil {
-		return fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	if strings.TrimSpace(noteID) == "" {
-		return fmt.Errorf("noteID: %w", errors.ErrEmptyString)
+		return fmt.Errorf("noteID: %w", serrors.ErrEmptyString)
 	}
 	if strings.TrimSpace(noteText) == "" {
-		return fmt.Errorf("noteText: %w", errors.ErrEmptyString)
+		return fmt.Errorf("noteText: %w", serrors.ErrEmptyString)
 	}
 	f, err := filters.New(opts...)
 	if err != nil {
@@ -63,10 +63,10 @@ func (sts *StatusThingService) EditNote(ctx context.Context, noteID, noteText st
 // DeleteNote removes the [statusthingv1.Note] with the provided id from the [statusthingv1.Item] with the provided id
 func (sts *StatusThingService) DeleteNote(ctx context.Context, noteID string) error {
 	if sts.store == nil {
-		return fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	if strings.TrimSpace(noteID) == "" {
-		return fmt.Errorf("noteID: %w", errors.ErrEmptyString)
+		return fmt.Errorf("noteID: %w", serrors.ErrEmptyString)
 	}
 	return sts.store.DeleteNote(ctx, noteID)
 }
@@ -74,10 +74,10 @@ func (sts *StatusThingService) DeleteNote(ctx context.Context, noteID string) er
 // AllNotes returns all [statusthingv1.Note] belonging to [statusthingv1.Item] with provided id
 func (sts *StatusThingService) AllNotes(ctx context.Context, itemID string) ([]*statusthingv1.Note, error) {
 	if sts.store == nil {
-		return nil, fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	if strings.TrimSpace(itemID) == "" {
-		return nil, fmt.Errorf("itemID: %w", errors.ErrEmptyString)
+		return nil, fmt.Errorf("itemID: %w", serrors.ErrEmptyString)
 	}
 	return sts.store.FindNotes(ctx, itemID)
 }
@@ -85,10 +85,10 @@ func (sts *StatusThingService) AllNotes(ctx context.Context, itemID string) ([]*
 // GetNote gets a [statusthingv1.Note] by id
 func (sts *StatusThingService) GetNote(ctx context.Context, noteID string) (*statusthingv1.Note, error) {
 	if sts.store == nil {
-		return nil, fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	if strings.TrimSpace(noteID) == "" {
-		return nil, fmt.Errorf("noteID: %w", errors.ErrEmptyString)
+		return nil, fmt.Errorf("noteID: %w", serrors.ErrEmptyString)
 	}
 	return sts.store.GetNote(ctx, noteID)
 }

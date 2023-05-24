@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/storers/memdb"
 	"github.com/lusis/statusthing/internal/testutils"
 	"github.com/stretchr/testify/require"
@@ -28,7 +28,7 @@ func TestItems(t *testing.T) {
 			item: &statusthingv1.Item{Name: "my-service", Timestamps: makeTsNow()},
 		},
 		"missing-item-id": {
-			err:  errors.ErrEmptyString,
+			err:  serrors.ErrEmptyString,
 			item: &statusthingv1.Item{Name: "my-service", Timestamps: makeTsNow()},
 			opts: []filters.FilterOption{filters.WithItemID("")},
 		},
@@ -78,7 +78,7 @@ func TestItems(t *testing.T) {
 			opts: []filters.FilterOption{
 				filters.WithStatusID("invalid"),
 			},
-			err: errors.ErrNotFound,
+			err: serrors.ErrNotFound,
 		},
 		"with-initial-note": {
 			// we need a custom item id to get the notes
@@ -163,7 +163,7 @@ func TestAddItem(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
 		_, err := sts.NewItem(context.TODO(), "")
-		require.ErrorIs(t, err, errors.ErrStoreUnavailable)
+		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("happy-path", func(t *testing.T) {
 		sts, err := NewStatusThingService(&testStatusThingStore{
@@ -217,7 +217,7 @@ func TestRemoveItem(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
 		err := sts.DeleteItem(context.TODO(), "")
-		require.ErrorIs(t, err, errors.ErrStoreUnavailable)
+		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("happy-path", func(t *testing.T) {
 		sts, err := NewStatusThingService(&testStatusThingStore{
@@ -235,7 +235,7 @@ func TestRemoveItem(t *testing.T) {
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
 		err = sts.DeleteItem(context.TODO(), "")
-		require.ErrorIs(t, err, errors.ErrEmptyString)
+		require.ErrorIs(t, err, serrors.ErrEmptyString)
 	})
 }
 

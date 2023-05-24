@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/testutils"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -16,9 +16,9 @@ import (
 func TestUpdateStatusRequirements(t *testing.T) {
 	mem, _ := New()
 	err := mem.UpdateStatus(context.TODO(), "", filters.WithColor("red"))
-	require.ErrorIs(t, err, errors.ErrEmptyString)
+	require.ErrorIs(t, err, serrors.ErrEmptyString)
 	err = mem.UpdateStatus(context.TODO(), "foo")
-	require.ErrorIs(t, err, errors.ErrAtLeastOne)
+	require.ErrorIs(t, err, serrors.ErrAtLeastOne)
 }
 func TestStatusLifecycle(t *testing.T) {
 	t.Parallel()
@@ -31,7 +31,7 @@ func TestStatusLifecycle(t *testing.T) {
 			status: testutils.MakeStatus(t.Name()),
 		},
 		"invalid-kind": {
-			err:    errors.ErrEmptyString,
+			err:    serrors.ErrEmptyString,
 			status: &statusthingv1.Status{Name: t.Name(), Kind: statusthingv1.StatusKind_STATUS_KIND_UNKNOWN},
 		},
 		"all-fields": {
@@ -96,7 +96,7 @@ func TestStatusLifecycle(t *testing.T) {
 				require.NoError(t, delErr)
 
 				nfErr := store.DeleteStatus(context.TODO(), res.Id)
-				require.ErrorIs(t, nfErr, errors.ErrNotFound)
+				require.ErrorIs(t, nfErr, serrors.ErrNotFound)
 			}
 		})
 	}
@@ -142,7 +142,7 @@ func TestDbStatusFromProto(t *testing.T) {
 		err         error
 	}
 	testcases := map[string]testcase{
-		"nil": {err: errors.ErrNilVal},
+		"nil": {err: serrors.ErrNilVal},
 		"happy-path": {
 			protostatus: &statusthingv1.Status{
 				Id:          t.Name() + "id",
@@ -168,7 +168,7 @@ func TestDbStatusFromProto(t *testing.T) {
 				Color:       t.Name() + "color",
 				Timestamps:  makeTestTsNow(),
 			},
-			err: errors.ErrEmptyEnum,
+			err: serrors.ErrEmptyEnum,
 		},
 		"invalid-id": {
 			protostatus: &statusthingv1.Status{
@@ -178,7 +178,7 @@ func TestDbStatusFromProto(t *testing.T) {
 				Color:       t.Name() + "color",
 				Timestamps:  makeTestTsNow(),
 			},
-			err: errors.ErrEmptyString,
+			err: serrors.ErrEmptyString,
 		},
 		"invalid-name": {
 			protostatus: &statusthingv1.Status{
@@ -188,7 +188,7 @@ func TestDbStatusFromProto(t *testing.T) {
 				Color:       t.Name() + "color",
 				Timestamps:  makeTestTsNow(),
 			},
-			err: errors.ErrEmptyString,
+			err: serrors.ErrEmptyString,
 		},
 		"nil-timestamps": {
 			protostatus: &statusthingv1.Status{
@@ -198,7 +198,7 @@ func TestDbStatusFromProto(t *testing.T) {
 				Description: t.Name() + "desc",
 				Color:       t.Name() + "color",
 			},
-			err: errors.ErrNilVal,
+			err: serrors.ErrNilVal,
 		},
 		"missing-created": {
 			protostatus: &statusthingv1.Status{
@@ -211,7 +211,7 @@ func TestDbStatusFromProto(t *testing.T) {
 					Updated: timestamppb.Now(),
 				},
 			},
-			err: errors.ErrInvalidData,
+			err: serrors.ErrInvalidData,
 		},
 		"missing-updated": {
 			protostatus: &statusthingv1.Status{
@@ -224,7 +224,7 @@ func TestDbStatusFromProto(t *testing.T) {
 					Created: timestamppb.Now(),
 				},
 			},
-			err: errors.ErrInvalidData,
+			err: serrors.ErrInvalidData,
 		},
 	}
 
@@ -280,7 +280,7 @@ func TestProtoToDbStatus(t *testing.T) {
 				Created:     tsToInt(timestamps.GetCreated()),
 				Updated:     tsToInt(timestamps.GetUpdated()),
 			},
-			err: errors.ErrInvalidData,
+			err: serrors.ErrInvalidData,
 		},
 		"missing-name": {
 			dbstatus: &dbStatus{
@@ -291,7 +291,7 @@ func TestProtoToDbStatus(t *testing.T) {
 				Created:     tsToInt(timestamps.GetCreated()),
 				Updated:     tsToInt(timestamps.GetUpdated()),
 			},
-			err: errors.ErrInvalidData,
+			err: serrors.ErrInvalidData,
 		},
 		"unknown-kind": {
 			dbstatus: &dbStatus{
@@ -303,7 +303,7 @@ func TestProtoToDbStatus(t *testing.T) {
 				Created:     tsToInt(timestamps.GetCreated()),
 				Updated:     tsToInt(timestamps.GetUpdated()),
 			},
-			err: errors.ErrInvalidData,
+			err: serrors.ErrInvalidData,
 		},
 		"missing-kind": {
 			dbstatus: &dbStatus{
@@ -314,7 +314,7 @@ func TestProtoToDbStatus(t *testing.T) {
 				Created:     tsToInt(timestamps.GetCreated()),
 				Updated:     tsToInt(timestamps.GetUpdated()),
 			},
-			err: errors.ErrInvalidData,
+			err: serrors.ErrInvalidData,
 		},
 		"invalid-created": {
 			dbstatus: &dbStatus{
@@ -326,7 +326,7 @@ func TestProtoToDbStatus(t *testing.T) {
 				Created:     0,
 				Updated:     tsToInt(timestamps.GetUpdated()),
 			},
-			err: errors.ErrInvalidData,
+			err: serrors.ErrInvalidData,
 		},
 		"invalid-updated": {
 			dbstatus: &dbStatus{
@@ -338,7 +338,7 @@ func TestProtoToDbStatus(t *testing.T) {
 				Created:     tsToInt(timestamps.GetCreated()),
 				Updated:     0,
 			},
-			err: errors.ErrInvalidData,
+			err: serrors.ErrInvalidData,
 		},
 	}
 

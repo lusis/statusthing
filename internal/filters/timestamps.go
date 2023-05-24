@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
+	"github.com/lusis/statusthing/internal/serrors"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -30,12 +30,12 @@ func (f *Filters) Timestamps() *statusthingv1.Timestamps {
 func WithTimestamps(ts *statusthingv1.Timestamps) FilterOption {
 	return func(f *Filters) error {
 		if ts == nil {
-			return fmt.Errorf("status kind: %w", errors.ErrNilVal)
+			return fmt.Errorf("status kind: %w", serrors.ErrNilVal)
 		}
 		curval := f.timestamps
 
 		if curval != nil && !proto.Equal(ts, curval) {
-			return fmt.Errorf("timestamps: %w", errors.ErrAlreadySet)
+			return fmt.Errorf("timestamps: %w", serrors.ErrAlreadySet)
 		}
 		f.timestamps = ts
 		return nil

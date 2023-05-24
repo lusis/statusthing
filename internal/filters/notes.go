@@ -1,7 +1,7 @@
 package filters
 
 import (
-	"github.com/lusis/statusthing/internal/errors"
+	"github.com/lusis/statusthing/internal/serrors"
 
 	"fmt"
 	"strings"
@@ -18,10 +18,10 @@ func (f *Filters) NoteText() string {
 func WithNoteText(text string) FilterOption {
 	return func(f *Filters) error {
 		if strings.TrimSpace(text) == "" {
-			return fmt.Errorf("text: %w", errors.ErrEmptyString)
+			return fmt.Errorf("text: %w", serrors.ErrEmptyString)
 		}
 		if f.noteText != nil {
-			return fmt.Errorf("noteText: %w", errors.ErrAlreadySet)
+			return fmt.Errorf("noteText: %w", serrors.ErrAlreadySet)
 		}
 		f.noteText = &text
 		return nil

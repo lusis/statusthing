@@ -10,8 +10,8 @@ import (
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	v1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 )
 
 const (
@@ -31,22 +31,22 @@ type dbItem struct {
 
 func memItemFromProto(pn *statusthingv1.Item) (*dbItem, error) {
 	if pn == nil {
-		return nil, fmt.Errorf("item: %w", errors.ErrNilVal)
+		return nil, fmt.Errorf("item: %w", serrors.ErrNilVal)
 	}
 	if pn.GetId() == "" {
-		return nil, fmt.Errorf("id: %w", errors.ErrEmptyString)
+		return nil, fmt.Errorf("id: %w", serrors.ErrEmptyString)
 	}
 	if pn.GetName() == "" {
-		return nil, fmt.Errorf("name: %w", errors.ErrEmptyString)
+		return nil, fmt.Errorf("name: %w", serrors.ErrEmptyString)
 	}
 	if pn.GetTimestamps() == nil {
-		return nil, fmt.Errorf("timestamps: %w", errors.ErrNilVal)
+		return nil, fmt.Errorf("timestamps: %w", serrors.ErrNilVal)
 	}
 	if !pn.GetTimestamps().GetCreated().IsValid() {
-		return nil, fmt.Errorf("created: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("created: %w", serrors.ErrInvalidData)
 	}
 	if !pn.GetTimestamps().GetUpdated().IsValid() {
-		return nil, fmt.Errorf("updated: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("updated: %w", serrors.ErrInvalidData)
 	}
 	n := &dbItem{
 		ID:          pn.GetId(),
@@ -70,10 +70,10 @@ func memItemFromProto(pn *statusthingv1.Item) (*dbItem, error) {
 
 func (mi *dbItem) toProto() (*statusthingv1.Item, error) {
 	if mi.ID == "" {
-		return nil, fmt.Errorf("id: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("id: %w", serrors.ErrInvalidData)
 	}
 	if mi.Name == "" {
-		return nil, fmt.Errorf("name: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("name: %w", serrors.ErrInvalidData)
 	}
 	item := &statusthingv1.Item{
 		Id:         mi.ID,
@@ -86,11 +86,11 @@ func (mi *dbItem) toProto() (*statusthingv1.Item, error) {
 	// timestamps
 	created, updated, deleted := intToTs(mi.Created), intToTs(mi.Updated), intToTs(mi.Deleted)
 	if !created.IsValid() {
-		return nil, fmt.Errorf("created: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("created: %w", serrors.ErrInvalidData)
 	}
 	item.Timestamps.Created = created
 	if !updated.IsValid() {
-		return nil, fmt.Errorf("updated: %w", errors.ErrInvalidData)
+		return nil, fmt.Errorf("updated: %w", serrors.ErrInvalidData)
 	}
 	item.Timestamps.Updated = updated
 	if mi.Description != "" {
@@ -177,7 +177,7 @@ func (s *StatusThingStore) GetItem(ctx context.Context, itemID string) (*v1.Item
 	}
 	item, ok := res.(*dbItem)
 	if !ok {
-		return nil, errors.ErrInvalidData
+		return nil, serrors.ErrInvalidData
 	}
 	pitem, err := item.toProto()
 	if err != nil {
@@ -187,8 +187,8 @@ func (s *StatusThingStore) GetItem(ctx context.Context, itemID string) (*v1.Item
 	if item.StatusID != "" {
 		status, err := getStatusWithTxn(ctx, txn, item.StatusID)
 		if err != nil {
-			if err == errors.ErrNotFound {
-				return nil, fmt.Errorf("status not found: %w", errors.ErrInvalidData)
+			if err == serrors.ErrNotFound {
+				return nil, fmt.Errorf("status not found: %w", serrors.ErrInvalidData)
 			}
 			return nil, err
 		}
@@ -224,7 +224,7 @@ func (s *StatusThingStore) FindItems(ctx context.Context, opts ...filters.Filter
 	for obj := res.Next(); obj != nil; obj = res.Next() {
 		entry, ok := obj.(*dbItem)
 		if !ok {
-			return nil, errors.ErrInvalidData
+			return nil, serrors.ErrInvalidData
 		}
 		// short-circuit any results that can never match when filters are provided
 		if (len(f.StatusIDs()) != 0 || len(f.StatusKinds()) != 0) && entry.StatusID == "" {
@@ -277,10 +277,10 @@ func (s *StatusThingStore) FindItems(ctx context.Context, opts ...filters.Filter
 // - [filters.WithStatus]
 func (s *StatusThingStore) UpdateItem(ctx context.Context, itemID string, opts ...filters.FilterOption) error {
 	if len(opts) == 0 {
-		return errors.ErrAtLeastOne
+		return serrors.ErrAtLeastOne
 	}
 	if strings.TrimSpace(itemID) == "" {
-		return errors.ErrEmptyString
+		return serrors.ErrEmptyString
 	}
 	f, err := filters.New(opts...)
 	if err != nil {

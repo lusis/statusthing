@@ -10,8 +10,8 @@ import (
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	v1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	serrors "github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	serrors "github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/services"
 )
 

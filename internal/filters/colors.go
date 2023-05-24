@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lusis/statusthing/internal/errors"
+	"github.com/lusis/statusthing/internal/serrors"
 )
 
 // WithColor provides a custom color value
 func WithColor(color string) FilterOption {
 	return func(f *Filters) error {
 		if strings.TrimSpace(color) == "" {
-			return fmt.Errorf("thing id %w", errors.ErrEmptyString)
+			return fmt.Errorf("thing id %w", serrors.ErrEmptyString)
 		}
 		if f.color != nil {
-			return fmt.Errorf("thing id: %w", errors.ErrAlreadySet)
+			return fmt.Errorf("thing id: %w", serrors.ErrAlreadySet)
 		}
 		f.color = &color
 		return nil

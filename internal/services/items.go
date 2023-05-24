@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 
 	"github.com/segmentio/ksuid"
 )
@@ -21,7 +21,7 @@ import (
 // - [filters.WithStatus] creates a new [statusthingv1.Status] before creating the item and sets the items status to that new status
 func (sts *StatusThingService) NewItem(ctx context.Context, name string, opts ...filters.FilterOption) (*statusthingv1.Item, error) {
 	if sts.store == nil {
-		return nil, fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	f, err := filters.New(opts...)
 	if err != nil {
@@ -46,7 +46,7 @@ func (sts *StatusThingService) NewItem(ctx context.Context, name string, opts ..
 	if f.StatusID() != "" {
 		status, err := sts.store.GetStatus(ctx, f.StatusID())
 		if err != nil {
-			return nil, fmt.Errorf("provided status id: %w", errors.ErrNotFound)
+			return nil, fmt.Errorf("provided status id: %w", serrors.ErrNotFound)
 		}
 		thing.Status = status
 	} else if f.Status() != nil {
@@ -82,7 +82,7 @@ func (sts *StatusThingService) NewItem(ctx context.Context, name string, opts ..
 // EditItem updates the [statusthingv1.Item] with the provided id
 func (sts *StatusThingService) EditItem(ctx context.Context, itemID string, opts ...filters.FilterOption) error {
 	if sts.store == nil {
-		return fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	return sts.store.UpdateItem(ctx, itemID, opts...)
 }
@@ -90,10 +90,10 @@ func (sts *StatusThingService) EditItem(ctx context.Context, itemID string, opts
 // DeleteItem removes a [statusthingv1.Item] by its unique id
 func (sts *StatusThingService) DeleteItem(ctx context.Context, itemID string) error {
 	if sts.store == nil {
-		return fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	if strings.TrimSpace(itemID) == "" {
-		return fmt.Errorf("itemID: %w", errors.ErrEmptyString)
+		return fmt.Errorf("itemID: %w", serrors.ErrEmptyString)
 	}
 	return sts.store.DeleteItem(ctx, itemID)
 }
@@ -105,7 +105,7 @@ func (sts *StatusThingService) DeleteItem(ctx context.Context, itemID string) er
 // StatusIDs and StatusKinds are mutually exclusive
 func (sts *StatusThingService) FindItems(ctx context.Context, opts ...filters.FilterOption) ([]*statusthingv1.Item, error) {
 	if sts.store == nil {
-		return nil, fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	return sts.store.FindItems(ctx, opts...)
 }
@@ -113,7 +113,7 @@ func (sts *StatusThingService) FindItems(ctx context.Context, opts ...filters.Fi
 // GetItem gets a [statusthingv1.Item] by id
 func (sts *StatusThingService) GetItem(ctx context.Context, itemID string) (*statusthingv1.Item, error) {
 	if sts.store == nil {
-		return nil, fmt.Errorf("store was nil: %w", errors.ErrStoreUnavailable)
+		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
 	return sts.store.GetItem(ctx, itemID)
 }

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/testutils"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -23,19 +23,19 @@ func TestProtoFromMemItem(t *testing.T) {
 	}{
 		"missing-id": {
 			item: &dbItem{},
-			err:  errors.ErrInvalidData,
+			err:  serrors.ErrInvalidData,
 		},
 		"missing-name": {
 			item: &dbItem{ID: "missing-name"},
-			err:  errors.ErrInvalidData,
+			err:  serrors.ErrInvalidData,
 		},
 		"missing-updated": {
 			item: &dbItem{ID: "missing-updated", Name: "missing-updated", Created: int(time.Now().UTC().UnixNano())},
-			err:  errors.ErrInvalidData,
+			err:  serrors.ErrInvalidData,
 		},
 		"missing-created": {
 			item: &dbItem{ID: "missing-updated", Name: "missing-updated", Updated: int(time.Now().UTC().UnixNano())},
-			err:  errors.ErrInvalidData,
+			err:  serrors.ErrInvalidData,
 		},
 		"with-deleted": {
 			item: &dbItem{ID: "missing-updated", Name: "missing-updated", Created: int(time.Now().UTC().UnixNano()), Updated: int(time.Now().UTC().UnixNano()), Deleted: int(time.Now().UTC().UnixNano())},
@@ -83,31 +83,31 @@ func TestDbItemFromProto(t *testing.T) {
 	}{
 		"nil-item": {
 			item: nil,
-			err:  errors.ErrNilVal,
+			err:  serrors.ErrNilVal,
 		},
 		"missing-id": {
 			item: &statusthingv1.Item{},
-			err:  errors.ErrEmptyString,
+			err:  serrors.ErrEmptyString,
 		},
 		"missing-name": {
 			item: &statusthingv1.Item{Id: "missing-name"},
-			err:  errors.ErrEmptyString,
+			err:  serrors.ErrEmptyString,
 		},
 		"missing-timestamps": {
 			item: &statusthingv1.Item{Id: "missing-timestamps", Name: "missing-timestamps"},
-			err:  errors.ErrNilVal,
+			err:  serrors.ErrNilVal,
 		},
 		"missing-updated": {
 			item: &statusthingv1.Item{Id: "missing-updated", Name: "missing-updated", Timestamps: &statusthingv1.Timestamps{
 				Created: timestamppb.Now(),
 			}},
-			err: errors.ErrInvalidData,
+			err: serrors.ErrInvalidData,
 		},
 		"missing-created": {
 			item: &statusthingv1.Item{Id: "missing-created", Name: "missing-created", Timestamps: &statusthingv1.Timestamps{
 				Updated: timestamppb.Now(),
 			}},
-			err: errors.ErrInvalidData,
+			err: serrors.ErrInvalidData,
 		},
 		"with-deleted": {
 			item: &statusthingv1.Item{Id: "with-deleted", Name: "with-deleted", Timestamps: &statusthingv1.Timestamps{
@@ -318,7 +318,7 @@ func TestItemsLifecycle(t *testing.T) {
 	require.NoError(t, delErr, "item should delete without error")
 
 	checkDelRes, checkDelErr := store.GetItem(ctx, res.GetId())
-	require.ErrorIs(t, checkDelErr, errors.ErrNotFound)
+	require.ErrorIs(t, checkDelErr, serrors.ErrNotFound)
 	require.Nil(t, checkDelRes)
 }
 
@@ -340,7 +340,7 @@ func TestGetItem(t *testing.T) {
 		txn.Commit()
 
 		ures, uerr := store.GetItem(ctx, mItem.ID)
-		require.ErrorIs(t, uerr, errors.ErrInvalidData)
+		require.ErrorIs(t, uerr, serrors.ErrInvalidData)
 		require.Nil(t, ures)
 	})
 }
@@ -350,11 +350,11 @@ func TestUpdateItem(t *testing.T) {
 	t.Run("no-opts", func(t *testing.T) {
 		store, _ := New()
 		rerr := store.UpdateItem(ctx, t.Name())
-		require.ErrorIs(t, rerr, errors.ErrAtLeastOne)
+		require.ErrorIs(t, rerr, serrors.ErrAtLeastOne)
 	})
 	t.Run("empty-id", func(t *testing.T) {
 		store, _ := New()
 		rerr := store.UpdateItem(ctx, "", filters.WithColor(t.Name()))
-		require.ErrorIs(t, rerr, errors.ErrEmptyString)
+		require.ErrorIs(t, rerr, serrors.ErrEmptyString)
 	})
 }

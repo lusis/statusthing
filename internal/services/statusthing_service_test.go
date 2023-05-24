@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
-	"github.com/lusis/statusthing/internal/errors"
 	"github.com/lusis/statusthing/internal/filters"
+	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/storers/memdb"
 	"github.com/lusis/statusthing/internal/storers/unimplemented"
 	"github.com/stretchr/testify/require"
@@ -18,7 +18,7 @@ var testErr = fmt.Errorf("snarf")
 func TestNew(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts, err := NewStatusThingService(nil)
-		require.ErrorIs(t, err, errors.ErrStoreUnavailable)
+		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 		require.Nil(t, sts, "should be nil")
 	})
 
@@ -109,7 +109,7 @@ func (ts *testStatusThingStore) GetStatus(_ context.Context, _ string) (*statust
 		return nil, ts.getStatusErr
 	}
 	if len(ts.customStatuses) == 0 {
-		return nil, errors.ErrNotFound
+		return nil, serrors.ErrNotFound
 	}
 	return ts.customStatuses[0], nil
 }
