@@ -12,13 +12,12 @@ func safeField(f string) string {
 	return f
 }
 
-// ValidString provides a shorter consistent check for what constitutes a valid string
-// to reduce boilerplate
-func ValidString(f string) bool {
-	return strings.TrimSpace(f) != ""
-}
-
 // NewError returns a statusthing specific error with a consistent error message
 func NewError(field string, err error) error {
 	return fmt.Errorf("%s: %w", safeField(field), err)
+}
+
+// NewWrappedError returns an serror wrapping an original error
+func NewWrappedError(field string, statusThingErr error, originalErr error) error {
+	return fmt.Errorf("%s: %w (%w)", field, statusThingErr, originalErr)
 }
