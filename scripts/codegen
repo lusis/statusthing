@@ -1,0 +1,7 @@
+#!/bin/bash
+set -eou pipefail
+set -x
+ROOT=$(git rev-parse --show-toplevel)
+cd "${ROOT}"
+
+rm -rf gen && buf generate && go mod tidy && go mod vendor
