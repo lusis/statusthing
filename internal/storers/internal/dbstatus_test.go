@@ -128,9 +128,9 @@ func TestStatusToProto(t *testing.T) {
 		"missing-created": {
 			dbstatus: &DbStatus{
 				DbCommon: &DbCommon{
-					ID:      t.Name(),
-					Name:    t.Name(),
-					Updated: uint64(storers.TsToInt64(timestamppb.Now())),
+					ID:           t.Name(),
+					Name:         t.Name(),
+					DbTimestamps: &DbTimestamps{Updated: uint64(storers.TsToInt64(timestamppb.Now()))},
 				},
 				Kind: storers.StringPtr(statusthingv1.StatusKind_STATUS_KIND_UNAVAILABLE.String()),
 			},
@@ -140,9 +140,9 @@ func TestStatusToProto(t *testing.T) {
 		"missing-updated": {
 			dbstatus: &DbStatus{
 				DbCommon: &DbCommon{
-					ID:      t.Name(),
-					Name:    t.Name(),
-					Created: uint64(storers.TsToInt64(timestamppb.Now())),
+					ID:           t.Name(),
+					Name:         t.Name(),
+					DbTimestamps: &DbTimestamps{Created: uint64(storers.TsToInt64(timestamppb.Now()))},
 				}, Kind: storers.StringPtr(statusthingv1.StatusKind_STATUS_KIND_UNAVAILABLE.String()),
 			},
 			err:     serrors.ErrInvalidData,
@@ -159,9 +159,10 @@ func TestStatusToProto(t *testing.T) {
 						ID:          t.Name(),
 						Name:        t.Name(),
 						Description: storers.StringPtr(t.Name()),
-						Created:     storers.TsToUInt64(timestamppb.Now()),
-						Updated:     storers.TsToUInt64(timestamppb.Now()),
-						Deleted:     storers.TsToUInt64Ptr(timestamppb.Now()),
+						DbTimestamps: &DbTimestamps{
+							Created: storers.TsToUInt64(timestamppb.Now()),
+							Updated: storers.TsToUInt64(timestamppb.Now()),
+							Deleted: storers.TsToUInt64Ptr(timestamppb.Now())},
 					},
 					Kind:  storers.StringPtr(statusthingv1.StatusKind_STATUS_KIND_AVAILABLE.String()),
 					Color: storers.StringPtr(t.Name()),
