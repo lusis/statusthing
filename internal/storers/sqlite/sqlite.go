@@ -5,20 +5,16 @@ import (
 	"database/sql"
 
 	"github.com/lusis/statusthing/internal/serrors"
+	"github.com/lusis/statusthing/internal/storers/unimplemented"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3" // goqu dialect
 	_ "modernc.org/sqlite"                             // sql driver
 )
 
-const (
-	itemsTableName  = "items"
-	statusTableName = "status"
-	notesTableName  = "notes"
-)
-
 // Store stores statusthing data
 type Store struct {
+	*unimplemented.StatusThingStore
 	db     *sql.DB
 	goqudb *goqu.Database
 }

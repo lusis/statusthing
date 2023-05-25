@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/lusis/statusthing/internal/storers"
@@ -21,29 +20,19 @@ func makeTempFilename(t testing.TB) string {
 	return f.Name()
 }
 
-func makeTestdb(t *testing.T, option string) (*sql.DB, func(), error) {
-	tempFilename := makeTempFilename(t)
-	url := tempFilename + option
-
-	cleanupFunc := func() {
-		err := os.Remove(tempFilename)
-		if err != nil {
-			t.Error("temp file remove error:", err)
-		}
-	}
-
-	db, err := sql.Open("sqlite", url)
+func makeTestdb(t *testing.T, option string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite", option)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	if err := db.Ping(); err != nil {
-		return nil, cleanupFunc, err
+		return nil, err
 	}
 	if err := createTables(context.TODO(), db); err != nil {
-		return nil, cleanupFunc, err
+		return nil, err
 	}
 
-	return db, cleanupFunc, nil
+	return db, nil
 }
 
 func TestImplementsStatusStorer(t *testing.T) {
@@ -52,15 +41,13 @@ func TestImplementsStatusStorer(t *testing.T) {
 }
 func TestCreateTables(t *testing.T) {
 	t.Parallel()
-	_, cleanup, err := makeTestdb(t, "")
-	defer cleanup()
+	_, err := makeTestdb(t, ":memory:")
 	require.NoError(t, err)
 }
 
 func TestCreateTablesIdempotent(t *testing.T) {
 	t.Parallel()
-	db, cleanup, err := makeTestdb(t, "")
-	defer cleanup()
+	db, err := makeTestdb(t, ":memory:")
 	require.NoError(t, err)
 	cerr := createTables(context.TODO(), db)
 	require.NoError(t, cerr)
