@@ -21,6 +21,8 @@ type Store struct {
 }
 
 // we need to register our own wrapper over modernc to enable fks reliably
+// this pattern is documented here: https://github.com/ent/ent/discussions/1667#discussioncomment-1132296
+// however we may want to wrap other drivers or add additional pragmas here
 func init() {
 	sql.Register("sqlite3", fkDriver{Driver: &sqlite.Driver{}})
 }
