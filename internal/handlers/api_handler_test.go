@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -349,8 +350,8 @@ func TestGetItems(t *testing.T) {
 			}
 
 			if len(tc.createStatuses) != 0 {
-				for _, s := range tc.createStatuses {
-					_, err := api.sts.NewStatus(ctx, s.status.GetName(), s.status.GetKind(), s.opts...)
+				for idx, s := range tc.createStatuses {
+					_, err := api.sts.NewStatus(ctx, fmt.Sprintf("%s-%d", s.status.GetName(), idx), s.status.GetKind(), s.opts...)
 					require.NoError(t, err)
 				}
 			}
