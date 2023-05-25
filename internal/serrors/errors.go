@@ -41,3 +41,12 @@ var ErrInvalidData = fmt.Errorf("invalid data")
 // ErrInUse is a custom error when a resource is in use
 // this error is generally returned when attempting to delete a Status entry when it is in use by an Item
 var ErrInUse = fmt.Errorf("in use")
+
+// ErrMissingTimestamp is the error when a Timestamp specific field is required
+var ErrMissingTimestamp = fmt.Errorf("timestamp required")
+
+// ErrUnrecoverable is the error when something has ABENDed in an unsafe to continue way
+var ErrUnrecoverable = fmt.Errorf("unrecoverable")
+
+// ErrUnexpectedRows is the error when a db query affects more rows than expected
+var ErrUnexpectedRows = fmt.Errorf("unexpected rows affect")

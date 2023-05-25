@@ -2,93 +2,29 @@ package memdb
 
 import (
 	"context"
-	"time"
-
-	hcmemdb "github.com/hashicorp/go-memdb"
+	"database/sql"
 
 	"github.com/lusis/statusthing/internal/serrors"
-
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"github.com/lusis/statusthing/internal/storers/sqlite"
 )
 
-var schema = &hcmemdb.DBSchema{
-	Tables: map[string]*hcmemdb.TableSchema{
-		"statuses": statusSchema,
-		"items":    itemSchema,
-		"notes":    notesSchema,
-	},
-}
+// Store is an in-memory store
+type Store = sqlite.Store
 
-// StatusThingStore ...
-type StatusThingStore struct {
-	db *hcmemdb.MemDB
-}
-
-// New ...
-func New() (*StatusThingStore, error) {
-	db, err := hcmemdb.NewMemDB(schema)
+// New returns a new [Store]
+func New() (*Store, error) {
+	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
 		return nil, err
 	}
+	if err := sqlite.CreateTables(context.TODO(), db); err != nil {
+		return nil, serrors.NewWrappedError("create-tables", serrors.ErrStoreUnavailable, err)
+	}
 
-	return &StatusThingStore{db: db}, nil
+	return sqlite.New(db)
 }
 
-func deleteWithTxn(_ context.Context, txn *hcmemdb.Txn, tableName string, item any) error {
-	err := txn.Delete(tableName, item)
-	if err != nil {
-		if err == hcmemdb.ErrNotFound {
-			return serrors.ErrNotFound
-		}
-		return err
-	}
-	return nil
-}
-
-func getWithTxn(_ context.Context, txn *hcmemdb.Txn, tableName string, index string, args ...interface{}) (hcmemdb.ResultIterator, error) {
-	res, err := txn.Get(tableName, index, args...)
-	if err != nil {
-		if err == hcmemdb.ErrNotFound {
-			return nil, serrors.ErrNotFound
-		}
-		return nil, err
-	}
-	if res == nil {
-		return nil, serrors.ErrNotFound
-	}
-	return res, nil
-}
-
-func firstWithTxn(_ context.Context, txn *hcmemdb.Txn, tableName string, index string, args ...interface{}) (interface{}, error) { // nolint: unparam
-	// unparam due to index string always being the same
-	res, err := txn.First(tableName, index, args...)
-	if err != nil {
-		if err == hcmemdb.ErrNotFound {
-			return nil, serrors.ErrNotFound
-		}
-		return nil, err
-	}
-	if res == nil {
-		return nil, serrors.ErrNotFound
-	}
-	return res, nil
-}
-
-func insertWithTxn(_ context.Context, txn *hcmemdb.Txn, tableName string, item any) error {
-	return txn.Insert(tableName, item)
-}
-
-func tsToInt(ts *timestamppb.Timestamp) int {
-	if ts == nil {
-		return 0
-	}
-	return int(ts.AsTime().UnixNano())
-}
-
-func intToTs(i int) *timestamppb.Timestamp {
-	// zero int val is a nil for us
-	if i == 0 {
-		return nil
-	}
-	return timestamppb.New(time.Unix(0, int64(i)).UTC())
+// NewStore ...
+func NewStore() (*Store, error) {
+	return New()
 }
