@@ -79,7 +79,27 @@ func (s *Store) UpdateStatus(ctx context.Context, statusID string, opts ...filte
 
 // DeleteStatus deletes a [statusthingv1.Status] by its id
 func (s *Store) DeleteStatus(ctx context.Context, statusID string) error {
-	panic("not implemented") // TODO: Implement
+	if !validation.ValidString(statusID) {
+		return serrors.NewError("statusid", serrors.ErrEmptyString)
+	}
+
+	if _, existserr := s.GetStatus(ctx, statusID); existserr != nil {
+		return existserr
+	}
+	res, reserr := s.db.ExecContext(ctx, fmt.Sprintf("DELETE FROM %s WHERE id = ?", statusTableName), statusID)
+	if reserr != nil {
+		return serrors.NewWrappedError("write", serrors.ErrUnrecoverable, reserr)
+	}
+	affected, aferr := res.RowsAffected()
+	if aferr != nil {
+		return serrors.NewWrappedError("affected-rows", serrors.ErrUnrecoverable, aferr)
+	}
+	if affected != 1 {
+		// we checked for existance earlier so this should only return if we delete more than one row
+		// we don't need to account for zero rows here but we might want to do an optimistic delete instead and handle zero differently
+		return serrors.NewError(fmt.Sprintf("%d rows affected", affected), serrors.ErrUnexpectedRows)
+	}
+	return nil
 }
 
 func dbStatusFromProto(pbstatus *statusthingv1.Status) (*dbStatus, error) {

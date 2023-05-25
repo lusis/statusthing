@@ -42,7 +42,14 @@ func TestItemLifecycle(t *testing.T) {
 	require.NotNil(t, res.GetTimestamps)
 	require.NotNil(t, res.GetTimestamps().GetCreated())
 	require.NotNil(t, res.GetTimestamps().GetUpdated())
+
+	delerr := store.DeleteStatus(ctx, res.GetId())
+	require.NoError(t, delerr)
+
+	delagainerr := store.DeleteStatus(ctx, res.GetId())
+	require.ErrorIs(t, delagainerr, serrors.ErrNotFound)
 }
+
 func TestStatusFromProto(t *testing.T) {
 	t.Parallel()
 

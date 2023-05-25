@@ -47,3 +47,6 @@ var ErrMissingTimestamp = fmt.Errorf("timestamp required")
 
 // ErrUnrecoverable is the error when something has ABENDed in an unsafe to continue way
 var ErrUnrecoverable = fmt.Errorf("unrecoverable")
+
+// ErrUnexpectedRows is the error when a db query affects more rows than expected
+var ErrUnexpectedRows = fmt.Errorf("unexpected rows affect")
