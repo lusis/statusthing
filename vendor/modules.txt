@@ -37,15 +37,6 @@ github.com/golang/protobuf/ptypes/timestamp
 # github.com/google/uuid v1.3.0
 ## explicit
 github.com/google/uuid
-# github.com/hashicorp/go-immutable-radix v1.3.0
-## explicit
-github.com/hashicorp/go-immutable-radix
-# github.com/hashicorp/go-memdb v1.3.4
-## explicit; go 1.13
-github.com/hashicorp/go-memdb
-# github.com/hashicorp/golang-lru v0.5.4
-## explicit; go 1.12
-github.com/hashicorp/golang-lru/simplelru
 # github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 ## explicit
 github.com/kballard/go-shellquote

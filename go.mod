@@ -16,8 +16,6 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/hashicorp/go-immutable-radix v1.3.0 // indirect
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
@@ -41,7 +39,6 @@ require (
 	github.com/bufbuild/connect-grpcreflect-go v1.1.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-chi/chi v1.5.4
-	github.com/hashicorp/go-memdb v1.3.4
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/pflag v1.0.5
