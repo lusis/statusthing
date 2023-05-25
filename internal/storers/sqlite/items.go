@@ -8,6 +8,7 @@ import (
 	"html"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	"github.com/lusis/statusthing/internal/filters"
 	"github.com/lusis/statusthing/internal/serrors"
@@ -29,7 +30,6 @@ type dbItem struct {
 
 // StoreItem stores the provided [statusthingv1.Item]
 func (s *Store) StoreItem(ctx context.Context, item *statusthingv1.Item) (*statusthingv1.Item, error) {
-
 	if item.GetStatus() != nil {
 		status := proto.Clone(item.GetStatus()).(*statusthingv1.Status)
 		// if the status has an id, we check if it exists
@@ -102,10 +102,50 @@ func (s *Store) GetItem(ctx context.Context, itemID string) (*statusthingv1.Item
 
 // FindItems returns all known [statusthingv1.Item] optionally filtered by the provided [filters.FilterOption]
 func (s *Store) FindItems(ctx context.Context, opts ...filters.FilterOption) ([]*statusthingv1.Item, error) {
-	/*
-		select items.* from items JOIN status on items.status_id = status.id WHERE items.status_id IS NOT NULL AND (items.status_id IN () OR status.kind IN ());
-	*/
-	panic("not implemented") // TODO: Implement
+	f, ferr := filters.New(opts...)
+	if ferr != nil {
+		return nil, ferr
+	}
+	dbitems := []*dbItem{}
+	pbitems := []*statusthingv1.Item{}
+
+	// this one gets a little weirder due to the join
+	// note the use of goqu.I instead of just the column name
+	// this indicates we want the identifier table.col not a column called "table.col"
+	ds := s.goqudb.From(itemsTableName).Prepared(true).
+		Select("items.*").
+		LeftJoin(goqu.T(statusTableName), goqu.On(goqu.I("items.status_id").Eq(goqu.I("status.id"))))
+	exprs := []exp.Expression{}
+	// add status kinds
+	if len(f.StatusKinds()) != 0 {
+		kindStrings := func() []string {
+			ss := []string{}
+			for _, k := range f.StatusKinds() {
+				ss = append(ss, k.String())
+			}
+			return ss
+		}()
+		exprs = append(exprs, goqu.I("status.kind").In(kindStrings)) // TOOD: cleanup column names
+	}
+
+	if len(f.StatusIDs()) != 0 {
+		exprs = append(exprs, goqu.I("status.id").In(f.StatusIDs())) // TOOD: cleanup column names
+	}
+
+	where := ds.Where(goqu.Or(exprs...)).Order(goqu.C(idColumn).Asc())
+	werr := where.ScanStructsContext(ctx, &dbitems)
+	if werr != nil {
+		return nil, serrors.NewWrappedError("driver", serrors.ErrUnrecoverable, werr)
+	}
+	for _, i := range dbitems {
+		// we're going to reuse our GetItem here so status gets populated properly
+		pbitem, err := s.GetItem(ctx, i.ID)
+		if err != nil {
+			return nil, err
+		}
+		pbitems = append(pbitems, pbitem)
+	}
+	return pbitems, nil
 }
 
 // UpdateItem updates the [statusthingv1.Item] by its id with the provided [filters.FilterOption]
@@ -264,6 +304,6 @@ func (s *dbItem) toProto() (*statusthingv1.Item, error) {
 		res.Timestamps.Deleted = storers.Int64ToTs(int64(*s.Deleted))
 	}
 	// status will be populated outside of here for now
-	// but that creates a potential tangled dep down the road
+	//
 	return res, nil
 }
