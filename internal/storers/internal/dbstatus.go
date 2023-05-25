@@ -12,9 +12,8 @@ import (
 // DbStatus represents a common representation of a [statusthingv1.Status] in a db
 type DbStatus struct {
 	*DbCommon
-	Description *string `db:"description"`
-	Color       *string `db:"color"`
-	Kind        *string `db:"kind"`
+	Color *string `db:"color"`
+	Kind  *string `db:"kind"`
 }
 
 // DbStatusFromProto creates a [DbStatus] from a [statusthingv1.Status]
@@ -22,21 +21,14 @@ func DbStatusFromProto(pbstatus *statusthingv1.Status) (*DbStatus, error) {
 	if pbstatus == nil {
 		return nil, serrors.NewError("status", serrors.ErrNilVal)
 	}
-	id := html.EscapeString(pbstatus.GetId())
-	name := html.EscapeString(pbstatus.GetName())
-	desc := html.EscapeString(pbstatus.GetDescription())
+	dbCommon, err := MakeDbCommon(pbstatus.GetId(), pbstatus.GetName(), pbstatus.GetDescription(), pbstatus.GetTimestamps())
+	if err != nil {
+		return nil, err
+	}
+
 	color := html.EscapeString(pbstatus.GetColor())
-	created := pbstatus.GetTimestamps().GetCreated()
-	updated := pbstatus.GetTimestamps().GetUpdated()
-	deleted := pbstatus.GetTimestamps().GetDeleted()
 	kind := pbstatus.GetKind()
 
-	if !validation.ValidString(id) {
-		return nil, serrors.NewError("id", serrors.ErrEmptyString)
-	}
-	if !validation.ValidString(name) {
-		return nil, serrors.NewError("name", serrors.ErrEmptyString)
-	}
 	if kind == statusthingv1.StatusKind_STATUS_KIND_UNKNOWN {
 		return nil, serrors.NewError("kind", serrors.ErrEmptyEnum)
 	}
@@ -45,29 +37,12 @@ func DbStatusFromProto(pbstatus *statusthingv1.Status) (*DbStatus, error) {
 		return nil, serrors.NewError("timestamps", serrors.ErrMissingTimestamp)
 	}
 
-	if !created.IsValid() {
-		return nil, serrors.NewError("created", serrors.ErrMissingTimestamp)
-	}
-	if !updated.IsValid() {
-		return nil, serrors.NewError("updated", serrors.ErrMissingTimestamp)
-	}
 	dbs := &DbStatus{
-		DbCommon: &DbCommon{
-			ID:      id,
-			Name:    name,
-			Created: storers.TsToUInt64(created),
-			Updated: storers.TsToUInt64(updated),
-		},
-		Kind: storers.StringPtr(kind.String()),
-	}
-	if validation.ValidString(desc) {
-		dbs.Description = storers.StringPtr(desc)
+		DbCommon: dbCommon,
+		Kind:     storers.StringPtr(kind.String()),
 	}
 	if validation.ValidString(color) {
 		dbs.Color = storers.StringPtr(color)
-	}
-	if deleted.IsValid() {
-		dbs.Deleted = storers.TsToUInt64Ptr(deleted)
 	}
 	return dbs, nil
 }

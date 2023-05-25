@@ -20,50 +20,21 @@ func DbItemFromProto(pbitem *statusthingv1.Item) (*DbItem, error) {
 	if pbitem == nil {
 		return nil, serrors.NewError("status", serrors.ErrNilVal)
 	}
-	id := html.EscapeString(pbitem.GetId())
-	name := html.EscapeString(pbitem.GetName())
-	desc := html.EscapeString(pbitem.GetDescription())
+	dbCommon, err := MakeDbCommon(pbitem.GetId(), pbitem.GetName(), pbitem.GetDescription(), pbitem.GetTimestamps())
+	if err != nil {
+		return nil, err
+	}
+
 	statusID := pbitem.GetStatus().GetId()
-	created := pbitem.GetTimestamps().GetCreated()
-	updated := pbitem.GetTimestamps().GetUpdated()
-	deleted := pbitem.GetTimestamps().GetDeleted()
 
-	if !validation.ValidString(id) {
-		return nil, serrors.NewError("id", serrors.ErrEmptyString)
-	}
-	if !validation.ValidString(name) {
-		return nil, serrors.NewError("name", serrors.ErrEmptyString)
-	}
-	if pbitem.GetTimestamps() == nil {
-		return nil, serrors.NewError("timestamps", serrors.ErrMissingTimestamp)
-	}
-
-	if !created.IsValid() {
-		return nil, serrors.NewError("created", serrors.ErrMissingTimestamp)
-	}
-	if !updated.IsValid() {
-		return nil, serrors.NewError("updated", serrors.ErrMissingTimestamp)
-	}
 	dbs := &DbItem{
-		DbCommon: &DbCommon{
-			ID:      id,
-			Name:    name,
-			Created: storers.TsToUInt64(created),
-			Updated: storers.TsToUInt64(updated),
-		},
+		DbCommon: dbCommon,
 	}
 
 	if validation.ValidString(statusID) {
 		dbs.StatusID = storers.StringPtr(statusID)
 	}
 
-	if validation.ValidString(desc) {
-		dbs.Description = storers.StringPtr(desc)
-	}
-
-	if deleted.IsValid() {
-		dbs.Deleted = storers.TsToUInt64Ptr(deleted)
-	}
 	return dbs, nil
 }
 
@@ -88,6 +59,9 @@ func (s *DbItem) ToProto() (*statusthingv1.Item, error) {
 		res.Description = html.UnescapeString(*s.Description)
 	}
 
+	if s.StatusID != nil {
+		res.Status = &statusthingv1.Status{Id: *s.StatusID}
+	}
 	// timestamps
 	pbcreated := storers.Int64ToTs(int64(s.Created))
 	pbupdated := storers.Int64ToTs(int64(s.Updated))

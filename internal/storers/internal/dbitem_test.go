@@ -8,61 +8,54 @@ import (
 	"github.com/lusis/statusthing/internal/storers"
 	"github.com/lusis/statusthing/internal/testutils"
 	"github.com/lusis/statusthing/internal/validation"
-
 	"github.com/stretchr/testify/require"
-
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type statusTestcase struct {
-	dbstatus *DbStatus
-	pbstatus *statusthingv1.Status
-	errtext  string
-	err      error
+type itemTestCase struct {
+	dbitem  *DbItem
+	pbitem  *statusthingv1.Item
+	errtext string
+	err     error
 }
 
-func TestStatusFromProto(t *testing.T) {
+func TestItemFromProto(t *testing.T) {
 	t.Parallel()
 
 	t.Run("nil-check", func(t *testing.T) {
-		s, serr := DbStatusFromProto(nil)
+		s, serr := DbItemFromProto(nil)
 		require.ErrorIs(t, serr, serrors.ErrNilVal)
 		require.Nil(t, s)
 	})
 
 	// t.Name inside this map refers to the name of the parent test not the iteration.
 	// It's intentional since we're not worried about conflict here
-	testcases := map[string]statusTestcase{
+	testcases := map[string]itemTestCase{
 		"happy-path": {},
 		"missing-id": {
-			pbstatus: &statusthingv1.Status{Id: ""},
-			err:      serrors.ErrEmptyString,
-			errtext:  "id",
+			pbitem:  &statusthingv1.Item{Id: ""},
+			err:     serrors.ErrEmptyString,
+			errtext: "id",
 		},
 		"missing-name": {
-			pbstatus: &statusthingv1.Status{Id: t.Name()},
-			err:      serrors.ErrEmptyString,
-			errtext:  "name",
-		},
-		"missing-kind": {
-			pbstatus: &statusthingv1.Status{Id: t.Name(), Name: t.Name(), Timestamps: testutils.MakeTimestamps(false)},
-			err:      serrors.ErrEmptyEnum,
-			errtext:  "kind",
+			pbitem:  &statusthingv1.Item{Id: t.Name()},
+			err:     serrors.ErrEmptyString,
+			errtext: "name",
 		},
 		"missing-timestamps": {
-			pbstatus: &statusthingv1.Status{Id: t.Name(), Name: t.Name(), Kind: statusthingv1.StatusKind_STATUS_KIND_UNAVAILABLE},
-			err:      serrors.ErrMissingTimestamp,
-			errtext:  "timestamps",
+			pbitem:  &statusthingv1.Item{Id: t.Name(), Name: t.Name()},
+			err:     serrors.ErrMissingTimestamp,
+			errtext: "timestamps",
 		},
 		"missing-created": {
-			pbstatus: &statusthingv1.Status{Id: t.Name(), Name: t.Name(), Kind: statusthingv1.StatusKind_STATUS_KIND_UNAVAILABLE, Timestamps: &statusthingv1.Timestamps{
+			pbitem: &statusthingv1.Item{Id: t.Name(), Name: t.Name(), Timestamps: &statusthingv1.Timestamps{
 				Updated: timestamppb.Now(),
 			}},
 			err:     serrors.ErrMissingTimestamp,
 			errtext: "created",
 		},
 		"missing-updated": {
-			pbstatus: &statusthingv1.Status{Id: t.Name(), Name: t.Name(), Kind: statusthingv1.StatusKind_STATUS_KIND_UNAVAILABLE, Timestamps: &statusthingv1.Timestamps{
+			pbitem: &statusthingv1.Item{Id: t.Name(), Name: t.Name(), Timestamps: &statusthingv1.Timestamps{
 				Created: timestamppb.Now(),
 			}},
 			err:     serrors.ErrMissingTimestamp,
@@ -72,14 +65,14 @@ func TestStatusFromProto(t *testing.T) {
 
 	for n, tc := range testcases {
 		t.Run(n, func(t *testing.T) {
-			pbstatus := tc.pbstatus
-			if pbstatus == nil {
-				pbstatus = testutils.MakeStatus(t.Name())
-				pbstatus.Color = t.Name()
-				pbstatus.Description = t.Name()
-				pbstatus.Timestamps = testutils.MakeTimestamps(true)
+			pb := tc.pbitem
+			if pb == nil {
+				pb = testutils.MakeItem(t.Name())
+				pb.Description = t.Name()
+				pb.Status = testutils.MakeStatus(t.Name())
+				pb.Timestamps = testutils.MakeTimestamps(true)
 			}
-			s, serr := DbStatusFromProto(pbstatus)
+			s, serr := DbItemFromProto(pb)
 			if tc.err != nil {
 				require.ErrorIs(t, serr, tc.err)
 				require.Nil(t, s)
@@ -89,14 +82,15 @@ func TestStatusFromProto(t *testing.T) {
 			} else {
 				require.NoError(t, serr)
 				require.NotNil(t, s)
-				require.Equal(t, pbstatus.GetId(), s.ID)
-				require.Equal(t, pbstatus.GetName(), s.Name)
-				require.Equal(t, pbstatus.GetKind().String(), *s.Kind)
-				require.Equal(t, pbstatus.GetDescription(), *s.Description)
-				require.Equal(t, pbstatus.GetColor(), *s.Color)
+				require.Equal(t, pb.GetId(), s.ID)
+				require.Equal(t, pb.GetName(), s.Name)
+				require.Equal(t, pb.GetDescription(), *s.Description)
 				require.NotZero(t, s.Created)
 				require.NotZero(t, s.Updated)
-				if tc.pbstatus.GetTimestamps().GetDeleted().IsValid() {
+				if pb.GetStatus() != nil {
+					require.Equal(t, pb.GetStatus().GetId(), *s.StatusID)
+				}
+				if tc.pbitem.GetTimestamps().GetDeleted().IsValid() {
 					require.NotNil(t, s.Deleted)
 				}
 			}
@@ -104,46 +98,40 @@ func TestStatusFromProto(t *testing.T) {
 	}
 }
 
-func TestStatusToProto(t *testing.T) {
+func TestItemToProto(t *testing.T) {
 	t.Parallel()
 	// t.Name inside this map refers to the name of the parent test not the iteration.
 	// It's intentional since we're not worried about conflict here
-	testcases := map[string]statusTestcase{
+	testcases := map[string]itemTestCase{
 		"happy-path": {},
 		"missing-id": {
-			dbstatus: &DbStatus{DbCommon: &DbCommon{ID: ""}},
-			err:      serrors.ErrInvalidData,
-			errtext:  "id",
+			dbitem:  &DbItem{DbCommon: &DbCommon{ID: ""}},
+			err:     serrors.ErrInvalidData,
+			errtext: "id",
 		},
 		"missing-name": {
-			dbstatus: &DbStatus{DbCommon: &DbCommon{ID: t.Name()}},
-			err:      serrors.ErrInvalidData,
-			errtext:  "name",
-		},
-		"missing-kind": {
-			dbstatus: &DbStatus{DbCommon: &DbCommon{ID: t.Name(), Name: t.Name()}},
-			err:      serrors.ErrInvalidData,
-			errtext:  "kind",
+			dbitem:  &DbItem{DbCommon: &DbCommon{ID: t.Name()}},
+			err:     serrors.ErrInvalidData,
+			errtext: "name",
 		},
 		"missing-created": {
-			dbstatus: &DbStatus{
+			dbitem: &DbItem{
 				DbCommon: &DbCommon{
 					ID:      t.Name(),
 					Name:    t.Name(),
 					Updated: uint64(storers.TsToInt64(timestamppb.Now())),
 				},
-				Kind: storers.StringPtr(statusthingv1.StatusKind_STATUS_KIND_UNAVAILABLE.String()),
 			},
 			err:     serrors.ErrInvalidData,
 			errtext: "created",
 		},
 		"missing-updated": {
-			dbstatus: &DbStatus{
+			dbitem: &DbItem{
 				DbCommon: &DbCommon{
 					ID:      t.Name(),
 					Name:    t.Name(),
 					Created: uint64(storers.TsToInt64(timestamppb.Now())),
-				}, Kind: storers.StringPtr(statusthingv1.StatusKind_STATUS_KIND_UNAVAILABLE.String()),
+				},
 			},
 			err:     serrors.ErrInvalidData,
 			errtext: "updated",
@@ -152,9 +140,9 @@ func TestStatusToProto(t *testing.T) {
 
 	for n, tc := range testcases {
 		t.Run(n, func(t *testing.T) {
-			dbstatus := tc.dbstatus
-			if dbstatus == nil {
-				dbstatus = &DbStatus{
+			dbitem := tc.dbitem
+			if dbitem == nil {
+				dbitem = &DbItem{
 					DbCommon: &DbCommon{
 						ID:          t.Name(),
 						Name:        t.Name(),
@@ -163,11 +151,10 @@ func TestStatusToProto(t *testing.T) {
 						Updated:     storers.TsToUInt64(timestamppb.Now()),
 						Deleted:     storers.TsToUInt64Ptr(timestamppb.Now()),
 					},
-					Kind:  storers.StringPtr(statusthingv1.StatusKind_STATUS_KIND_AVAILABLE.String()),
-					Color: storers.StringPtr(t.Name()),
+					StatusID: storers.StringPtr(t.Name()),
 				}
 			}
-			s, serr := dbstatus.ToProto()
+			s, serr := dbitem.ToProto()
 			if tc.err != nil {
 				require.ErrorIs(t, serr, tc.err)
 				require.Nil(t, s)
@@ -177,14 +164,15 @@ func TestStatusToProto(t *testing.T) {
 			} else {
 				require.NoError(t, serr)
 				require.NotNil(t, s)
-				require.Equal(t, dbstatus.ID, s.GetId())
-				require.Equal(t, dbstatus.Name, s.GetName())
-				require.Equal(t, *dbstatus.Kind, s.GetKind().String())
-				require.Equal(t, *dbstatus.Description, s.GetDescription())
-				require.Equal(t, *dbstatus.Color, s.GetColor())
+				require.Equal(t, dbitem.ID, s.GetId())
+				require.Equal(t, dbitem.Name, s.GetName())
+				require.Equal(t, *dbitem.Description, s.GetDescription())
 				require.True(t, s.GetTimestamps().GetCreated().IsValid())
 				require.True(t, s.GetTimestamps().GetUpdated().IsValid())
-				if dbstatus.Deleted != nil {
+				if validation.ValidString(*dbitem.StatusID) {
+					require.Equal(t, *dbitem.StatusID, s.GetStatus().GetId())
+				}
+				if dbitem.Deleted != nil {
 					require.True(t, s.GetTimestamps().GetDeleted().IsValid())
 				}
 			}
