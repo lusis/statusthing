@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/bufbuild/connect-go"
+	"golang.org/x/exp/slog"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	v1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
@@ -253,6 +254,7 @@ func (api *APIHandler) DeleteStatus(ctx context.Context, req *connect.Request[v1
 }
 
 func handleError(err error) *connect.Error {
+	slog.Error("handling error", "error", err)
 	if errors.Is(err, serrors.ErrEmptyString) {
 		return connect.NewError(connect.CodeInvalidArgument, err)
 	}
