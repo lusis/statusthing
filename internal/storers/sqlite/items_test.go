@@ -157,7 +157,6 @@ func TestFindItems(t *testing.T) {
 	}
 	for n, tc := range testCases {
 		t.Run(n, func(t *testing.T) {
-			// db, dberr := makeTestdb(t, "bugfile")
 			db, dberr := makeTestdb(t, ":memory:")
 			require.NoError(t, dberr)
 			require.NotNil(t, db)
@@ -196,4 +195,27 @@ func TestFindItems(t *testing.T) {
 			require.Len(t, fres, tc.count)
 		})
 	}
+}
+
+func TestUpdateItem(t *testing.T) {
+	ctx := context.TODO()
+	t.Run("invalid-status-id", func(t *testing.T) {
+		db, dberr := makeTestdb(t, ":memory:")
+		require.NoError(t, dberr)
+		require.NotNil(t, db)
+		store, _ := New(db)
+		item, itemerr := store.StoreItem(ctx, testutils.MakeItem(t.Name()))
+		require.NoError(t, itemerr)
+		require.NotNil(t, item)
+		t.Logf("item: %+v\n", item)
+
+		uerr := store.UpdateItem(ctx, item.GetId(), filters.WithStatusID("invalid"))
+		require.Error(t, uerr, serrors.ErrNotFound)
+		require.Contains(t, uerr.Error(), "item")
+
+		citem, cerr := store.GetItem(ctx, item.GetId())
+		require.NoError(t, cerr)
+		require.NotNil(t, citem)
+	})
+
 }

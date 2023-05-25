@@ -4,6 +4,7 @@ package sqlite
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/doug-martin/goqu/v9"
@@ -86,6 +87,11 @@ func (s *Store) GetItem(ctx context.Context, itemID string) (*statusthingv1.Item
 			pbrec.Status = status
 		}
 
+		notes, nerr := s.FindNotes(ctx, rec.ID)
+		if nerr != nil {
+			return nil, serrors.NewWrappedError("notes", serrors.ErrInvalidData, nerr)
+		}
+		pbrec.Notes = notes
 		return pbrec, nil
 	}
 	return nil, serrors.NewError("items", serrors.ErrNotFound)
@@ -170,13 +176,19 @@ func (s *Store) UpdateItem(ctx context.Context, itemID string, opts ...filters.F
 		columns[descriptionColumn] = desc
 	}
 
-	query, params, qerr := s.goqudb.Update(itemsTableName).Prepared(true).Where(goqu.C(idColumn).Eq(itemID)).Set(columns).ToSQL()
+	query, params, qerr := s.goqudb.Update(itemsTableName).Prepared(true).Where(goqu.I(idColumn).Eq(itemID)).Set(columns).ToSQL()
 	if qerr != nil {
-		return serrors.NewWrappedError("driver", serrors.ErrUnrecoverable, qerr)
+		return serrors.NewWrappedError("sqlbuilder", serrors.ErrUnrecoverable, qerr)
 	}
 
 	res, reserr := s.db.ExecContext(ctx, query, params...)
 	if reserr != nil {
+		var sqliteErr *sqlite.Error
+		if errors.As(reserr, &sqliteErr) {
+			if sqliteErr.Code() == 787 {
+				return serrors.NewWrappedError("item", serrors.ErrNotFound, sqliteErr)
+			}
+		}
 		return serrors.NewWrappedError("write", serrors.ErrUnrecoverable, reserr)
 	}
 	if _, lerr := res.LastInsertId(); lerr != nil {

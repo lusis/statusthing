@@ -3,13 +3,14 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 
 	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/storers/unimplemented"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3" // goqu dialect
-	_ "modernc.org/sqlite"                             // sql driver
+	"modernc.org/sqlite"                               // sql driver
 )
 
 // Store stores statusthing data
@@ -19,6 +20,31 @@ type Store struct {
 	goqudb *goqu.Database
 }
 
+// we need to register our own wrapper over modernc to enable fks reliably
+func init() {
+	sql.Register("sqlite3", fkDriver{Driver: &sqlite.Driver{}})
+}
+
+type fkDriver struct {
+	*sqlite.Driver
+}
+
+// Open opens a connection with the PRAGMA set
+func (d fkDriver) Open(name string) (driver.Conn, error) {
+	conn, err := d.Driver.Open(name)
+	if err != nil {
+		return conn, err
+	}
+	c := conn.(interface {
+		Exec(stmt string, args []driver.Value) (driver.Result, error)
+	})
+	if _, err := c.Exec("PRAGMA foreign_keys = on;", nil); err != nil {
+		conn.Close()
+		return nil, serrors.NewWrappedError("driver", serrors.ErrStoreUnavailable, err)
+	}
+	return conn, nil
+}
+
 // New returns a new [Store]
 func New(db *sql.DB) (*Store, error) {
 	goqu.SetIgnoreUntaggedFields(true)
@@ -26,7 +52,8 @@ func New(db *sql.DB) (*Store, error) {
 	return &Store{db: db, goqudb: gdb}, nil
 }
 
-func createTables(ctx context.Context, db *sql.DB) error {
+// CreateTables creates the required tables for the sqlite3 store
+func CreateTables(ctx context.Context, db *sql.DB) error {
 	txn, err := db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return serrors.NewWrappedError("start-transaction", serrors.ErrUnrecoverable, err)

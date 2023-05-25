@@ -21,14 +21,14 @@ func makeTempFilename(t testing.TB) string {
 }
 
 func makeTestdb(t *testing.T, option string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite", option)
+	db, err := sql.Open("sqlite3", option)
 	if err != nil {
 		return nil, err
 	}
 	if err := db.Ping(); err != nil {
 		return nil, err
 	}
-	if err := createTables(context.TODO(), db); err != nil {
+	if err := CreateTables(context.TODO(), db); err != nil {
 		return nil, err
 	}
 
@@ -49,6 +49,6 @@ func TestCreateTablesIdempotent(t *testing.T) {
 	t.Parallel()
 	db, err := makeTestdb(t, ":memory:")
 	require.NoError(t, err)
-	cerr := createTables(context.TODO(), db)
+	cerr := CreateTables(context.TODO(), db)
 	require.NoError(t, cerr)
 }
