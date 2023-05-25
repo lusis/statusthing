@@ -10,6 +10,7 @@ import (
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	"github.com/lusis/statusthing/internal/filters"
 	"github.com/lusis/statusthing/internal/serrors"
+	"github.com/lusis/statusthing/internal/validation"
 )
 
 // NewNote adds the provided text as a [statusthingv1.Note] to the [statusthingv1.Item] with the provided id
@@ -17,11 +18,14 @@ func (sts *StatusThingService) NewNote(ctx context.Context, itemID, noteText str
 	if sts.store == nil {
 		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
-	if strings.TrimSpace(itemID) == "" {
-		return nil, fmt.Errorf("itemID: %w", serrors.ErrEmptyString)
+	if !validation.ValidString(itemID) {
+		return nil, serrors.NewError("itemID", serrors.ErrEmptyString)
 	}
-	if strings.TrimSpace(noteText) == "" {
-		return nil, fmt.Errorf("noteText: %w", serrors.ErrEmptyString)
+	if !validation.ValidString(noteText) {
+		return nil, serrors.NewError("noteText", serrors.ErrEmptyString)
+	}
+	if _, err := sts.GetItem(ctx, itemID); err != nil {
+		return nil, err
 	}
 	id := ksuid.New().String()
 	note := &statusthingv1.Note{
@@ -74,10 +78,13 @@ func (sts *StatusThingService) DeleteNote(ctx context.Context, noteID string) er
 // AllNotes returns all [statusthingv1.Note] belonging to [statusthingv1.Item] with provided id
 func (sts *StatusThingService) AllNotes(ctx context.Context, itemID string) ([]*statusthingv1.Note, error) {
 	if sts.store == nil {
-		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
+		return nil, serrors.NewError("store", serrors.ErrStoreUnavailable)
 	}
-	if strings.TrimSpace(itemID) == "" {
-		return nil, fmt.Errorf("itemID: %w", serrors.ErrEmptyString)
+	if !validation.ValidString(itemID) {
+		return nil, serrors.NewError("itemID", serrors.ErrEmptyString)
+	}
+	if _, err := sts.GetItem(ctx, itemID); err != nil {
+		return nil, err
 	}
 	return sts.store.FindNotes(ctx, itemID)
 }
@@ -87,6 +94,7 @@ func (sts *StatusThingService) GetNote(ctx context.Context, noteID string) (*sta
 	if sts.store == nil {
 		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
+
 	if strings.TrimSpace(noteID) == "" {
 		return nil, fmt.Errorf("noteID: %w", serrors.ErrEmptyString)
 	}

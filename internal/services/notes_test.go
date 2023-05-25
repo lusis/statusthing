@@ -20,13 +20,17 @@ func TestAddNote(t *testing.T) {
 		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("happy-path", func(t *testing.T) {
-		sts, err := NewStatusThingService(&testStatusThingStore{
-			customStatuses: []*statusthingv1.Status{},
-		})
+		db, err := memdb.New()
+		require.NoError(t, err)
+		require.NotNil(t, db)
+		sts, err := NewStatusThingService(db)
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		res, err := sts.NewNote(context.TODO(), t.Name(), t.Name())
-		require.NoError(t, err, "should not error")
+		ires, ierr := sts.NewItem(context.TODO(), t.Name())
+		require.NoError(t, ierr)
+		require.NotNil(t, ires)
+		res, reserr := sts.NewNote(context.TODO(), ires.GetId(), t.Name())
+		require.NoError(t, reserr, "should not error")
 		require.NotNil(t, res)
 	})
 	t.Run("missing-item-id", func(t *testing.T) {

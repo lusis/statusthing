@@ -3,11 +3,11 @@ package services
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	"github.com/lusis/statusthing/internal/filters"
 	"github.com/lusis/statusthing/internal/serrors"
+	"github.com/lusis/statusthing/internal/validation"
 
 	"github.com/segmentio/ksuid"
 )
@@ -21,7 +21,7 @@ import (
 // - [filters.WithStatus] creates a new [statusthingv1.Status] before creating the item and sets the items status to that new status
 func (sts *StatusThingService) NewItem(ctx context.Context, name string, opts ...filters.FilterOption) (*statusthingv1.Item, error) {
 	if sts.store == nil {
-		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
+		return nil, serrors.NewError("store", serrors.ErrStoreUnavailable)
 	}
 	f, err := filters.New(opts...)
 	if err != nil {
@@ -37,20 +37,24 @@ func (sts *StatusThingService) NewItem(ctx context.Context, name string, opts ..
 		Name:       name,
 		Timestamps: makeTsNow(),
 	}
+	statusID := f.StatusID()
+	status := f.Status()
+	desc := f.Description()
+	noteText := f.NoteText()
 
 	// this next bit gets unfortunately a bit convoluted due to flexibility
 	// first we check if they have a status id provided
 	// if so, we get that status and add it to the new item
 	// otherwise we check if there's a status attached
 	// and use that
-	if f.StatusID() != "" {
-		status, err := sts.store.GetStatus(ctx, f.StatusID())
+	if validation.ValidString(statusID) {
+		status, err := sts.store.GetStatus(ctx, statusID)
 		if err != nil {
-			return nil, fmt.Errorf("provided status id: %w", serrors.ErrNotFound)
+			return nil, serrors.NewWrappedError("provided-statusid", serrors.ErrNotFound, err)
 		}
 		thing.Status = status
-	} else if f.Status() != nil {
-		thing.Status = f.Status()
+	} else if status != nil {
+		thing.Status = status
 		// we have to create an id if one isn't present
 		if f.Status().GetId() == "" {
 			thing.Status.Id = ksuid.New().String()
@@ -60,15 +64,15 @@ func (sts *StatusThingService) NewItem(ctx context.Context, name string, opts ..
 			thing.Status.Timestamps = makeTsNow()
 		}
 	}
-	if f.Description() != "" {
-		thing.Description = f.Description()
+	if desc != "" {
+		thing.Description = desc
 	}
 	res, err := sts.store.StoreItem(ctx, thing)
 	if err != nil {
 		return nil, err
 	}
 
-	if f.NoteText() != "" {
+	if validation.ValidString(noteText) {
 		_, nerr := sts.NewNote(ctx, res.GetId(), f.NoteText())
 		if nerr != nil {
 			return nil, nerr
@@ -82,7 +86,7 @@ func (sts *StatusThingService) NewItem(ctx context.Context, name string, opts ..
 // EditItem updates the [statusthingv1.Item] with the provided id
 func (sts *StatusThingService) EditItem(ctx context.Context, itemID string, opts ...filters.FilterOption) error {
 	if sts.store == nil {
-		return fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
+		return serrors.NewError("store", serrors.ErrStoreUnavailable)
 	}
 	return sts.store.UpdateItem(ctx, itemID, opts...)
 }
@@ -90,10 +94,10 @@ func (sts *StatusThingService) EditItem(ctx context.Context, itemID string, opts
 // DeleteItem removes a [statusthingv1.Item] by its unique id
 func (sts *StatusThingService) DeleteItem(ctx context.Context, itemID string) error {
 	if sts.store == nil {
-		return fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
+		return serrors.NewError("store", serrors.ErrStoreUnavailable)
 	}
-	if strings.TrimSpace(itemID) == "" {
-		return fmt.Errorf("itemID: %w", serrors.ErrEmptyString)
+	if !validation.ValidString(itemID) {
+		return serrors.NewError("itemID", serrors.ErrEmptyString)
 	}
 	return sts.store.DeleteItem(ctx, itemID)
 }
