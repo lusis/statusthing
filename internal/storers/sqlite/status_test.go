@@ -12,13 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type statusTestcase struct {
-	dbstatus *dbStatus
-	pbstatus *statusthingv1.Status
-	errtext  string
-	err      error
-}
-
 func TestStatusLifecycle(t *testing.T) {
 	ctx := context.TODO()
 	db, dberr := makeTestdb(t, ":memory:")

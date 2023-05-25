@@ -13,13 +13,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type itemTestcase struct {
-	dbthing *dbItem
-	pbthing *statusthingv1.Item
-	errtext string
-	err     error
-}
-
 func TestItemLifecycle(t *testing.T) {
 	ctx := context.TODO()
 	db, dberr := makeTestdb(t, ":memory:")

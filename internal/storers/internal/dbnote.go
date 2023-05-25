@@ -11,9 +11,9 @@ import (
 
 // DbNote is a common representation of a [statusthingv1.Note] in a database
 type DbNote struct {
-	ID       string
-	NoteText string
-	ItemID   string
+	ID       string `db:"id"`
+	NoteText string `db:"note_text"`
+	ItemID   string `db:"item_id"`
 	*DbTimestamps
 }
 
