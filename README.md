@@ -9,10 +9,10 @@ Documentation below this section may be out of state but I'll try and not let th
 
 This section will go away when that situation changes at a minimum requiring:
 
-- a non-in-memory store implementation 
-- simple ability to create your own binary linking to your own store implementation
-- documentation updates
-- ability to support bug requests
+- [X] a non-in-memory store implementation 
+- [ ] simple ability to create your own binary linking to your own store implementation
+- [ ] documentation updates
+- [ ] ability to support bug requests
 
 At that point, I will feel comfortable with folks using it and able to support it properly
 
