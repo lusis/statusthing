@@ -38,7 +38,21 @@ func createTables(ctx context.Context, db *sql.DB) error {
 	if txn == nil {
 		return serrors.NewError("txn", serrors.ErrUnrecoverable)
 	}
+
+	// status -> items -> notes
 	if _, err := txn.ExecContext(ctx, stmtCreateStatusTable); err != nil {
+		if rerr := txn.Rollback(); rerr != nil {
+			return serrors.NewWrappedError("rollback", serrors.ErrUnrecoverable, rerr)
+		}
+		return serrors.NewWrappedError("create-table", serrors.ErrUnrecoverable, err)
+	}
+	if _, err := txn.ExecContext(ctx, stmtCreateItemsTable); err != nil {
+		if rerr := txn.Rollback(); rerr != nil {
+			return serrors.NewWrappedError("rollback", serrors.ErrUnrecoverable, rerr)
+		}
+		return serrors.NewWrappedError("create-table", serrors.ErrUnrecoverable, err)
+	}
+	if _, err := txn.ExecContext(ctx, stmtCreateNotesTable); err != nil {
 		if rerr := txn.Rollback(); rerr != nil {
 			return serrors.NewWrappedError("rollback", serrors.ErrUnrecoverable, rerr)
 		}

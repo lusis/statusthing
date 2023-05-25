@@ -26,8 +26,6 @@ type dbStatus struct {
 	Deleted     *uint64 `db:"deleted"`
 }
 
-var stmtCreateStatusTable = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (`id` VARCHAR(191) PRIMARY KEY, `name` VARCHAR(191) NOT NULL UNIQUE, `kind` VARCHAR(191) NOT NULL UNIQUE, `description` VARCHAR(191) DEFAULT NULL,`color` VARCHAR(191) DEFAULT NULL, `created` INT NOT NULL,`updated` INT NOT NULL, `deleted` INT DEFAULT NULL)", statusTableName)
-
 // StoreStatus stores the provided [statusthingv1.Status]
 func (s *Store) StoreStatus(ctx context.Context, status *statusthingv1.Status) (*statusthingv1.Status, error) {
 	rec, err := dbStatusFromProto(status)
