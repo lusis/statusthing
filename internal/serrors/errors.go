@@ -50,3 +50,6 @@ var ErrUnrecoverable = fmt.Errorf("unrecoverable")
 
 // ErrUnexpectedRows is the error when a db query affects more rows than expected
 var ErrUnexpectedRows = fmt.Errorf("unexpected rows affect")
+
+// ErrMissingCredentials is the error when something expects credentials (i.e. a database connection string or api call)
+var ErrMissingCredentials = fmt.Errorf("missing credentials")

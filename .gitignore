@@ -23,3 +23,4 @@ go-sqlite3-test-*
 *.db
 data/
 fly.toml
+*.sqlite
