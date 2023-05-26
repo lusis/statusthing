@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"io/fs"
 	"net/http"
 	"os"
@@ -16,7 +17,7 @@ import (
 	"github.com/lusis/statusthing/gen/go/statusthing/v1/statusthingv1connect"
 	"github.com/lusis/statusthing/internal/handlers"
 	"github.com/lusis/statusthing/internal/services"
-	"github.com/lusis/statusthing/internal/storers/memdb"
+	"github.com/lusis/statusthing/internal/storers/sqlite"
 	"github.com/lusis/statusthing/internal/validation"
 
 	"golang.org/x/exp/slog"
@@ -34,14 +35,27 @@ func main() {
 	logger := slog.New(logHandler)
 	slog.SetDefault(logger)
 	flag.Parse()
-	store, err := memdb.New()
+	db, err := sql.Open("sqlite3", "statusthing.db")
 	if err != nil {
-		slog.Error("unable to create store", "error", err)
+		logger.Error("unable to create db file", "error", err)
 		os.Exit(1)
 	}
-	svc, err := services.NewStatusThingService(store, services.WithDefaults())
+	if err := sqlite.CreateTables(context.TODO(), db); err != nil {
+		logger.Error("error creating tables", "error", err)
+		os.Exit(1)
+	}
+	store, err := sqlite.New(db)
 	if err != nil {
-		slog.Error("unable to create service", "error", err)
+		logger.Error("unable to create store", "error", err)
+		os.Exit(1)
+	}
+	if err := db.Ping(); err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	svc, err := services.NewStatusThingService(store) //, services.WithDefaults())
+	if err != nil {
+		logger.Error("unable to create service", "error", err)
 		os.Exit(1)
 	}
 

@@ -23,14 +23,14 @@
         <div hx-ext="client-side-templates">
             <div class="row">
                 <div class="col-4">Items</div>
-                <div class="col-4"><button hx-trigger="click,load delay:1s, every 10s"
+                <div class="col-4"><button hx-trigger="click,load, every 10s"
                         hx-post="/statusthing.v1.ItemsService/ListItems" hx-ext='json-enc' mustache-template="item-card"
                         hx-target="#item-cards">reload</button></div>
             </div>
             <div id="item-cards" class="row"></div>
             <div class="row">
                 <div class="col-4">Statuses</div>
-                <div class="col-4"><button hx-trigger="load delay:2s, every 30s" class="row" hx-trigger="click"
+                <div class="col-4"><button hx-trigger="click,load, every 30s" class="row" hx-trigger="click"
                         hx-post="/statusthing.v1.StatusService/ListStatus" hx-ext='json-enc'
                         mustache-template="status-card" hx-target="#status-cards">reload</button></div>
             </div>
