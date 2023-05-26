@@ -3,6 +3,8 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,10 +13,12 @@ import (
 	grpcreflect "github.com/bufbuild/connect-grpcreflect-go"
 	flag "github.com/spf13/pflag"
 
+	"github.com/lusis/statusthing/assets"
 	"github.com/lusis/statusthing/gen/go/statusthing/v1/statusthingv1connect"
 	"github.com/lusis/statusthing/internal/handlers"
 	"github.com/lusis/statusthing/internal/services"
-	"github.com/lusis/statusthing/internal/storers/memdb"
+	"github.com/lusis/statusthing/internal/storers/sqlite"
+	"github.com/lusis/statusthing/internal/validation"
 
 	"golang.org/x/exp/slog"
 	"golang.org/x/net/http2"
@@ -31,14 +35,27 @@ func main() {
 	logger := slog.New(logHandler)
 	slog.SetDefault(logger)
 	flag.Parse()
-	store, err := memdb.New()
+	db, err := sql.Open("sqlite3", "statusthing.db")
 	if err != nil {
-		slog.Error("unable to create store", "error", err)
+		logger.Error("unable to create db file", "error", err)
 		os.Exit(1)
 	}
-	svc, err := services.NewStatusThingService(store, services.WithDefaults())
+	if err := sqlite.CreateTables(context.TODO(), db); err != nil {
+		logger.Error("error creating tables", "error", err)
+		os.Exit(1)
+	}
+	store, err := sqlite.New(db)
 	if err != nil {
-		slog.Error("unable to create service", "error", err)
+		logger.Error("unable to create store", "error", err)
+		os.Exit(1)
+	}
+	if err := db.Ping(); err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	svc, err := services.NewStatusThingService(store) //, services.WithDefaults())
+	if err != nil {
+		logger.Error("unable to create service", "error", err)
 		os.Exit(1)
 	}
 
@@ -64,6 +81,17 @@ func main() {
 	mux.Handle(notepath, notehandler)
 	statuspath, statushandler := statusthingv1connect.NewStatusServiceHandler(apiHandler)
 	mux.Handle(statuspath, statushandler)
+	// index
+	uifs, err := fs.Sub(assets.UIFs, "ui")
+	if err != nil {
+		slog.Error("unable to create fs", "error", err)
+		os.Exit(1)
+	}
+	fileserver := http.FileServer(http.FS(uifs))
+	if validation.ValidString(os.Getenv("NO_EMBED")) {
+		fileserver = http.FileServer(http.Dir("./assets/ui"))
+	}
+	mux.Handle("/", fileserver)
 	server := &http.Server{
 		Addr:     *apiAddr,
 		Handler:  h2c.NewHandler(requestLogger(mux), &http2.Server{}),
@@ -88,7 +116,7 @@ func main() {
 
 func requestLogger(next http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		slog.Info("handling request", "http.path", r.URL.Path, "http.host", r.Host, "http.client", r.Header.Get("User-Agent"))
+		slog.Info("handling request", "http.path", r.URL.Path, "http.host", r.Host, "http.client", r.Header.Get("User-Agent"), "content-type", r.Header.Get("content-type"), "http.method", r.Method)
 		next.ServeHTTP(w, r)
 	}
 }

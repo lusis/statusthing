@@ -23,8 +23,3 @@ func New() (*Store, error) {
 
 	return sqlite.New(db)
 }
-
-// NewStore ...
-func NewStore() (*Store, error) {
-	return New()
-}
