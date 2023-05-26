@@ -1,0 +1,16 @@
+<div hx-ext="client-side-templates">
+    <template id="status-card">
+        {{#statuses}}
+        <div class="col-4">
+            <div class="card text-black border" id="card-{{id}}">
+                <div class="card-body">
+                    <h5 class="card-title">{{name}}</h5>
+                    <p class="card-text">Kind: {{kind}}</p>
+                    <p class="card-text">Color: {{color}}</p>
+                    <p class="card-text"><small class="text-muted">ID: {{id}}</small></p>
+                </div>
+            </div>
+        </div>
+        {{/statuses}}
+    </template>
+</div>
