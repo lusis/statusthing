@@ -53,3 +53,6 @@ var ErrUnexpectedRows = fmt.Errorf("unexpected rows affect")
 
 // ErrMissingCredentials is the error when something expects credentials (i.e. a database connection string or api call)
 var ErrMissingCredentials = fmt.Errorf("missing credentials")
+
+// ErrDependencyMissing is the error when a dependency fails to create
+var ErrDependencyMissing = fmt.Errorf("required dependency failed")

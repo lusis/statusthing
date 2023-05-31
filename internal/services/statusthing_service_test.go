@@ -53,7 +53,7 @@ func TestNew(t *testing.T) {
 		sts, err := NewStatusThingService(mdb, WithDefaults())
 		require.NoError(t, err)
 		require.NotNil(t, sts)
-		all, allerr := sts.AllStatuses(context.TODO())
+		all, allerr := sts.FindStatus(context.TODO())
 		require.NoError(t, allerr)
 		require.NotNil(t, all)
 		require.Len(t, all, 3)

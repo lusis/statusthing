@@ -140,7 +140,7 @@ func (api *APIHandler) GetNote(ctx context.Context, req *connect.Request[v1.GetN
 // ListNotes gets all Note for an Item
 func (api *APIHandler) ListNotes(ctx context.Context, req *connect.Request[v1.ListNotesRequest]) (*connect.Response[v1.ListNotesResponse], error) {
 	itemID := req.Msg.GetItemId()
-	res, err := api.sts.AllNotes(ctx, itemID)
+	res, err := api.sts.FindNotes(ctx, itemID)
 	if err != nil {
 		return nil, handleError(err)
 	}
@@ -193,7 +193,7 @@ func (api *APIHandler) ListStatus(ctx context.Context, req *connect.Request[v1.L
 	if req.Msg.GetKinds() != nil {
 		opts = append(opts, filters.WithStatusKinds(req.Msg.Kinds...))
 	}
-	res, err := api.sts.AllStatuses(ctx, opts...)
+	res, err := api.sts.FindStatus(ctx, opts...)
 	if err != nil {
 		return nil, handleError(err)
 	}

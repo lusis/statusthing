@@ -85,7 +85,7 @@ func TestItems(t *testing.T) {
 			opts:    []filters.FilterOption{filters.WithNoteText("this is my text"), filters.WithItemID("my-item-id")},
 			notelen: 1,
 			validationFunc: func(sts *StatusThingService) bool {
-				i, err := sts.AllNotes(ctx, "my-item-id")
+				i, err := sts.FindNotes(ctx, "my-item-id")
 				if err != nil {
 					return false
 				}
