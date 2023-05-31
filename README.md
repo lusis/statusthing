@@ -4,7 +4,7 @@ StatusThing is an open source status page application
 It originally started life as a quick thought exercise on a basic status page service for internal status pages.
 
 ## WARNING
-This application is in active development. At the time of this readme update, the only implemented store is in-memory. Data is lost at shutdown.
+This application is in active development. 
 Documentation below this section may be out of state but I'll try and not let that happen.
 
 This section will go away when that situation changes at a minimum requiring:
@@ -17,9 +17,22 @@ This section will go away when that situation changes at a minimum requiring:
 At that point, I will feel comfortable with folks using it and able to support it properly
 
 ## QuickStart
-`go run cmd/statusthing-api/main.go`
+`go run cmd/statusthing/main.go`
 
-Everything is stored in memory right now and is lost at shutdown. 
+Data will be stored in an sqlite db in the current directory called `statusthing.db`
+
+### Admin ui
+There's a HIGHLY volatile admin ui available right now on http://localhost:9000
+
+The default credentials are `admin`/`password` and can't be changed yet.
+
+### Devmode
+The binary supports a flag - `--devmode` that does a few different things:
+
+- enables grpc reflection endpoints
+- reloads all templates and assets from disk on each request
+
+The later is absolutely required for developing any UI changes but is definitely bad idea in non-development (also it won't work unless you bundle the repo with the binary)
 
 ## Concepts
 All core concepts are represented as protobuf types in the file `proto/statusthing/v1/types.proto`. If you've never worked with protobuf before, that's fine as you never need to deal with anything protobuf-specific to use the service.

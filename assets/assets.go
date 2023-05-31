@@ -7,3 +7,8 @@ import "embed"
 //
 //go:embed ui/*
 var UIFs embed.FS
+
+// TemplateFS is the filesystem storing our templates
+//
+//go:embed templates/*
+var TemplateFS embed.FS

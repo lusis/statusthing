@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" class="has-navbar-fixed-top">
+{{ template "head" . }}
+
+<body>
+    {{ template "navbar" . }}
+    <div class="container" id="{{ .ContentDiv }}">
+        {{ block "list-status-ui" . }}
+        <div class="columns is-centered">
+            <div class="column is-full">
+                {{ if not .LoggedIn }}
+                {{ template "login-ui" . }}
+                {{ else }}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>
+                                <abbr title="description">Desc</abbr>
+                            </th>
+                            <th>Color</th>
+                            <th>Kind</th>
+                            <th>Edit</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range statuses }}
+                        <tr>
+                            <td>
+                                <pre>{{ .Id }}</pre>
+                            </td>
+                            <td>{{ .Name }}</td>
+                            <td>{{ .Description }}</td>
+                            <td style="background-color:  {{ .Color }};">{{ .Color }}</td>
+                            <td>{{ .Kind }}</td>
+                            <td><a class="navbar-item" href="#" hx-get="login" hx-target="#content"><i
+                                        class="material-icons">edit</i></a></td>
+                            <td><a class="navbar-item" href="#" hx-post="delete-status" hx-target="#content"
+                                    hx-confirm="are you sure?" name="delete-status" id="{{ .Id }}"><i
+                                        class="material-icons">delete</i></a></td>
+                        </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+                {{ end }}
+            </div>
+        </div>
+        {{ end }}
+    </div>
+</body>
+
+</html>

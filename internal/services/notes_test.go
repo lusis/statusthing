@@ -134,14 +134,14 @@ func TestAllNotes(t *testing.T) {
 	ctx := context.TODO()
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
-		res, err := sts.AllNotes(ctx, t.Name())
+		res, err := sts.FindNotes(ctx, t.Name())
 		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 		require.Nil(t, res)
 	})
 	t.Run("missing-itemid", func(t *testing.T) {
 		mem, _ := memdb.New()
 		sts := &StatusThingService{store: mem}
-		res, err := sts.AllNotes(ctx, "")
+		res, err := sts.FindNotes(ctx, "")
 		require.ErrorIs(t, err, serrors.ErrEmptyString)
 		require.Nil(t, res)
 	})

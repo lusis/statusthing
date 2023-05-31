@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" class="has-navbar-fixed-top">
+{{ template "head" . }}
+
+<body>
+    {{ template "navbar" . }}
+    <div class="container" id="{{ .ContentDiv }}">
+        {{ block "add-item-ui" .}}
+        <div class="columns is-full">
+            <div class="column is-centered">
+                {{ if not .LoggedIn }}
+                {{ template "login-ui" . }}
+                {{ else }}
+                <div class="columns is-centered">
+                    <div class="column is-full">
+                        <form name="add-item" hx-post="/add-item">
+                            <div class="field is-grouped">
+                                <div class="control">
+                                    <label for="name">Name</label>
+                                    <input id="name" type="text" class="input" name="name">
+                                </div>
+
+                                <div class="control">
+                                    <label for="description">Description</label>
+                                    <input id="description" type="text" class="input" name="description">
+                                </div>
+                                <div class="select control">
+                                    <label for="status">Status</label>
+                                    <select id="status" name="status">
+                                        <option selected disabled>Pick a status</option>
+                                        {{ range statuses }}
+                                        <option value="{{ .Id }}">{{ .Name }}</option>
+                                        {{ end }}
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="field is-grouped">
+                                <div class="control">
+                                    <button class="button is-link">Submit</button>
+                                </div>
+                                <div class="control">
+                                    <button class="button is-link is-light">Cancel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+        {{ end }}
+    </div>
+</body>
+
+</html>

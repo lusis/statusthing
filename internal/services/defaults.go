@@ -7,9 +7,10 @@ import (
 )
 
 const (
-	green  = "#5DFC0A"
-	red    = "#FF0000"
-	yellow = "#EEEB8D"
+	defaultColor = green
+	green        = "#5DFC0A"
+	red          = "#FF0000"
+	yellow       = "#EEEB8D"
 )
 
 var defaultStatuses = []*statusthingv1.Status{

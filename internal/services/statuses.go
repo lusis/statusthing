@@ -48,6 +48,8 @@ func (sts *StatusThingService) NewStatus(ctx context.Context, statusName string,
 
 	if strings.TrimSpace(f.Color()) != "" {
 		newStatus.Color = f.Color()
+	} else {
+		newStatus.Color = defaultColor
 	}
 	return sts.store.StoreStatus(ctx, newStatus)
 }
@@ -67,8 +69,8 @@ func (sts *StatusThingService) EditStatus(ctx context.Context, statusID string, 
 	return sts.store.UpdateStatus(ctx, statusID, opts...)
 }
 
-// AllStatuses gets all [statusthingv1.Status]
-func (sts *StatusThingService) AllStatuses(ctx context.Context, opts ...filters.FilterOption) ([]*statusthingv1.Status, error) {
+// FindStatus gets all [statusthingv1.Status]
+func (sts *StatusThingService) FindStatus(ctx context.Context, opts ...filters.FilterOption) ([]*statusthingv1.Status, error) {
 	return sts.store.FindStatus(ctx, opts...)
 }
 

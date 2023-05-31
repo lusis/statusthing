@@ -75,8 +75,8 @@ func (sts *StatusThingService) DeleteNote(ctx context.Context, noteID string) er
 	return sts.store.DeleteNote(ctx, noteID)
 }
 
-// AllNotes returns all [statusthingv1.Note] belonging to [statusthingv1.Item] with provided id
-func (sts *StatusThingService) AllNotes(ctx context.Context, itemID string) ([]*statusthingv1.Note, error) {
+// FindNotes returns all [statusthingv1.Note] belonging to [statusthingv1.Item] with provided id
+func (sts *StatusThingService) FindNotes(ctx context.Context, itemID string) ([]*statusthingv1.Note, error) {
 	if sts.store == nil {
 		return nil, serrors.NewError("store", serrors.ErrStoreUnavailable)
 	}
