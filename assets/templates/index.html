@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" class="has-navbar-fixed-top">
+
+{{ block "head" . }}
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/css/bulma.min.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <script src="/js/htmx.min.js"></script>
+    <script src="/js/bulma.js"></script>
+    <script src="/js/ours.js"></script>
+    <title>StatusThing</title>
+</head>
+{{ end }}
+
+<body>
+    {{ block "navbar" .}}
+    <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand"><a href="/">StatusThing</a></div>
+        <div class="navbar-menu">
+            <div class="navbar-start"></div>
+        </div>
+        <div class="navbar-end" hx-target="#content">
+            {{ if .LoggedIn }}
+            <div class="navbar-item has-dropdown">
+                <a class="navbar-link" href="#">Items</a>
+                <div class="navbar-dropdown">
+                    <a class="navbar-item" href="items.html">List Items</a>
+                    <a class="navbar-item" href="add-item.html">Add Item</a>
+                </div>
+            </div>
+            <div class="navbar-item has-dropdown">
+                <a class="navbar-link" href="#">Statuses</a>
+                <div class="navbar-dropdown">
+                    <a class="navbar-item" href="status.html">List Statuses</a>
+                    <a class="navbar-item" href="add-status.html">Add Status</a>
+                </div>
+            </div>
+            <a class="navbar-item" href="profile.html"><i class="material-icons">person</i></a>
+            <a class="navbar-item" href="settings.html"><i class="material-icons">settings</i></a>
+            {{ else }}
+            <a class="navbar-item" href="#" hx-get="login-ui" hx-trigger="load"><i class="material-icons">person</i></a>
+            {{ end }}
+        </div>
+    </nav>
+    {{ end }}
+    <div class="container" id="{{ .ContentDiv }}">
+        {{ if .LoggedIn }}
+        <div class="columns is-centered">
+            <div class="column is-full">
+                Choose an action from the menu
+            </div>
+        </div>
+        {{ else }}
+        {{ template "login-ui" .}}
+        {{ end }}
+
+    </div>
+</body>
+
+</html>

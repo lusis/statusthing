@@ -4,3 +4,21 @@
     border: 1px solid black;
     background-color: gray;
 }
+
+.card {
+    border-radius: 15px;
+}
+
+.rounded-card-bottom {
+    /* overflow: visible; */
+    border-bottom-left-radius: 15px !important;
+    border-bottom-right-radius: 15px !important;
+}
+
+.navbar-fixed {
+    margin-bottom: 15px;
+}
+
+.page-footer {
+    margin-top: 15px;
+}
