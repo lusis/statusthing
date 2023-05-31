@@ -83,6 +83,12 @@ func CreateTables(ctx context.Context, db *sql.DB) error {
 		}
 		return serrors.NewWrappedError("create-table", serrors.ErrUnrecoverable, err)
 	}
+	if _, err := txn.ExecContext(ctx, stmtCreateUsersTable); err != nil {
+		if rerr := txn.Rollback(); rerr != nil {
+			return serrors.NewWrappedError("rollback", serrors.ErrUnrecoverable, rerr)
+		}
+		return serrors.NewWrappedError("create-table", serrors.ErrUnrecoverable, err)
+	}
 	if err := txn.Commit(); err != nil {
 		return serrors.NewWrappedError("commit", serrors.ErrUnrecoverable, err)
 	}

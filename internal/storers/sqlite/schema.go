@@ -7,6 +7,7 @@ const (
 	itemsTableName  = "items"
 	statusTableName = "status"
 	notesTableName  = "notes"
+	usersTableName  = "users"
 
 	// columns
 	idColumn          = "id"
@@ -65,7 +66,19 @@ var (
 		FOREIGN KEY(item_id) REFERENCES items(id)
 	)
 	`
+	tmplCreateUsersTable = `
+	CREATE TABLE IF NOT EXISTS %s
+	(
+		id VARCHAR(191) PRIMARY KEY,
+		username VARCHAR(191) NOT NULL UNIQUE,
+		encrypted_password BLOB NOT NULL,
+		created INT NOT NULL,
+		updated INT NOT NULL,
+		deleted INT DEFAULT NULL
+	)
+	`
 	stmtCreateStatusTable = fmt.Sprintf(tmplCreateStatusTable, statusTableName)
 	stmtCreateItemsTable  = fmt.Sprintf(tmplCreateItemsTable, itemsTableName)
 	stmtCreateNotesTable  = fmt.Sprintf(tmplCreateNotesTable, notesTableName)
+	stmtCreateUsersTable  = fmt.Sprintf(tmplCreateUsersTable, usersTableName)
 )

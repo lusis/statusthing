@@ -59,3 +59,12 @@ type StatusStorer interface {
 	// DeleteStatus deletes a [statusthingv1.Status] by its id
 	DeleteStatus(ctx context.Context, statusID string) error
 }
+
+// UserStorer stores users
+type UserStorer interface {
+	StoreUser(ctx context.Context)
+	GetUser(ctx context.Context, userID string)
+	FindUser(ctx context.Context, opts ...filters.FilterOption)
+	UpdateUser(ctx context.Context, opts ...filters.FilterOption)
+	DeleteUser(ctx context.Context, userID string)
+}
