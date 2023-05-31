@@ -6,19 +6,15 @@
     {{ template "navbar" . }}
     <div class="container" id="{{ .ContentDiv }}">
         {{ block "profile-ui" .}}
-        <div class="columns is-full">
-            <div class="column is-centered">
-                {{ if not .LoggedIn }}
-                {{ template "login-ui" . }}
-                {{ else }}
-                <div class="columns is-centered">
-                    <div class="column is-full">
-                        <p>Current Session ID: {{ .UserID }}</p>
-                    </div>
-                </div>
-                {{ end }}
+        {{ if not .LoggedIn }}
+        {{ template "login-ui" . }}
+        {{ else }}
+        <div class="columns is-centered">
+            <div class="column is-full">
+                <p>Current Session ID: {{ .UserID }}</p>
             </div>
         </div>
+        {{ end }}
         {{ end }}
     </div>
 </body>

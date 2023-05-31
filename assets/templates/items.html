@@ -6,56 +6,56 @@
     {{ template "navbar" . }}
     <div class="container" id="{{ .ContentDiv }}">
         {{ block "list-items-ui" . }}
+
+        {{ if not .LoggedIn }}
+
+        {{ template "login-ui" . }}
+
+        {{ else }}
         <div class="columns is-centered">
             <div class="column is-full">
-                {{ if not .LoggedIn }}
-                {{ template "login-ui" . }}
-                {{ else }}
-                <div class="columns is-centered">
-                    <div class="column is-full">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>
-                                        <abbr title="description">Desc</abbr>
-                                    </th>
-                                    <th>Status</th>
-                                    <th>Notes</th>
-                                    <th>Edit</th>
-                                    <th>Delete</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{ range items }}
-                                <tr>
-                                    <td>
-                                        <pre>{{ .Id }}</pre>
-                                    </td>
-                                    <td>{{ .Name }}</td>
-                                    <td>{{ .Description }}</td>
-                                    {{ if not .Status }}
-                                    <td>no status assigned</td>
-                                    {{else}}
-                                    <td style="background-color: {{.Status.Color}};">{{ .Status.Name }}</td>
-                                    {{end}}
-                                    <td><a class="navbar-item" href="#" hx-get="notes" hx-target="#content"
-                                            id="{{ .Id }}" name="notes"><i class="material-icons">newspaper</i></a></td>
-                                    <td><a class="navbar-item" href="#" hx-get="edit-item" hx-target="#content"
-                                            id="{{ .Id }}" name="edit-item"><i class="material-icons">edit</i></a></td>
-                                    <td><a class="navbar-item" href="#" hx-post="delete-item" hx-confirm="are you sure?"
-                                            id="{{ .Id }}" name="delete-item"><i class="material-icons">delete</i></a>
-                                    </td>
-                                </tr>
-                                {{end}}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                {{ end }}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>
+                                <abbr title="description">Desc</abbr>
+                            </th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th>Edit</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range items }}
+                        <tr>
+                            <td>
+                                <pre>{{ .Id }}</pre>
+                            </td>
+                            <td>{{ .Name }}</td>
+                            <td>{{ .Description }}</td>
+                            {{ if not .Status }}
+                            <td>no status assigned</td>
+                            {{else}}
+                            <td style="background-color: {{.Status.Color}};">{{ .Status.Name }}</td>
+                            {{end}}
+                            <td><a class="navbar-item" href="#" hx-get="notes" hx-target="#content" id="{{ .Id }}"
+                                    name="notes"><i class="material-icons">newspaper</i></a></td>
+                            <td><a class="navbar-item" href="#" hx-get="edit-item" hx-target="#content" id="{{ .Id }}"
+                                    name="edit-item"><i class="material-icons">edit</i></a></td>
+                            <td><a class="navbar-item" href="#" hx-post="delete-item" hx-confirm="are you sure?"
+                                    id="{{ .Id }}" name="delete-item"><i class="material-icons">delete</i></a>
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
             </div>
         </div>
+        {{ end }}
+
         {{ end }}
     </div>
 </body>

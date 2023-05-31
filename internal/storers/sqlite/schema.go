@@ -72,6 +72,7 @@ var (
 		id VARCHAR(191) PRIMARY KEY,
 		username VARCHAR(191) NOT NULL UNIQUE,
 		encrypted_password BLOB NOT NULL,
+		last_login INT NOT NULL,
 		created INT NOT NULL,
 		updated INT NOT NULL,
 		deleted INT DEFAULT NULL

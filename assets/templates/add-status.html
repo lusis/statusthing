@@ -6,54 +6,52 @@
     {{ template "navbar" . }}
     <div class="container" id="{{ .ContentDiv }}">
         {{ block "add-status-ui" .}}
-        <div class="columns is-full">
-            <div class="column is-centered">
-                {{ if not .LoggedIn }}
-                {{ template "login-ui" . }}
-                {{ else }}
-                <div class="columns is-centered">
-                    <div class="column is-full">
-                        <form name="add-status" hx-post="/add-status">
-                            <div class="field is-grouped">
-                                <div class="control">
-                                    <label for="name">Name</label>
-                                    <input placeholder="admin" id="name" name="name" type="text" class="input">
-                                </div>
 
-                                <div class="control">
-                                    <label for="description">Description</label>
-                                    <input id="description" type="text" class="input" name="description">
-                                </div>
-                                <div class="control">
-                                    <label for="color">color</label>
-                                    <input id="color" type="color" class="input" name="color">
-                                </div>
-                                <div class="select control">
-                                    <label for="status">Kind</label>
-                                    <select id="status" name="kind">
-                                        <option selected disabled>Pick a kind</option>
-                                        {{ range kinds }}
-                                        <option>{{ . }}</option>
-                                        {{ end }}
-                                    </select>
-                                </div>
-                            </div>
+        {{ if not .LoggedIn }}
+        {{ template "login-ui" . }}
+        {{ else }}
+        <div class="columns is-centered">
+            <div class="column is-full">
+                <form name="add-status" hx-post="/add-status">
+                    <div class="field is-grouped">
+                        <div class="control">
+                            <label for="name">Name</label>
+                            <input placeholder="admin" id="name" name="name" type="text" class="input">
+                        </div>
 
-
-                            <div class="field is-grouped">
-                                <div class="control">
-                                    <button class="button is-link">Submit</button>
-                                </div>
-                                <div class="control">
-                                    <button class="button is-link is-light">Cancel</button>
-                                </div>
-                            </div>
-                        </form>
+                        <div class="control">
+                            <label for="description">Description</label>
+                            <input id="description" type="text" class="input" name="description">
+                        </div>
+                        <div class="control">
+                            <label for="color">color</label>
+                            <input id="color" type="color" class="input" name="color">
+                        </div>
+                        <div class="select control">
+                            <label for="status">Kind</label>
+                            <select id="status" name="kind">
+                                <option selected disabled>Pick a kind</option>
+                                {{ range kinds }}
+                                <option>{{ . }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
                     </div>
-                </div>
-                {{ end }}
+
+
+                    <div class="field is-grouped">
+                        <div class="control">
+                            <button class="button is-link">Submit</button>
+                        </div>
+                        <div class="control">
+                            <button class="button is-link is-light">Cancel</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
+        {{ end }}
+
         {{ end }}
     </div>
 </body>
