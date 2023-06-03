@@ -48,6 +48,7 @@ func TestNew(t *testing.T) {
 	})
 	t.Run("with-default-statuses", func(t *testing.T) {
 		mdb, err := memdb.New()
+
 		require.NoError(t, err)
 		require.NotNil(t, mdb)
 		sts, err := NewStatusThingService(mdb, WithDefaults())

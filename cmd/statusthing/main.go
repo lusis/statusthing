@@ -31,7 +31,7 @@ func main() {
 		logger.Error("error migrating database", "error", err)
 		os.Exit(1)
 	}
-
+	defer db.Close()
 	store, err := sqlite.New(db)
 	if err != nil {
 		logger.Error("unable to create store", "error", err)
