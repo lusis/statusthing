@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/lusis/statusthing/internal/validation"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -22,6 +23,15 @@ func Int64ToTs(i int64) *timestamppb.Timestamp {
 		return nil
 	}
 	return timestamppb.New(time.Unix(0, i).UTC())
+}
+
+// TimeToUint64 converts a time.Time to uint64
+func TimeToUint64(t *time.Time) uint64 {
+	def := uint64(0)
+	if t != nil {
+		def = uint64(t.UnixNano())
+	}
+	return def
 }
 
 // TsToUInt64 returns a timestamppb.Timestamp as a uint64

@@ -16,7 +16,7 @@ import (
 func TestAddNote(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
-		_, err := sts.NewNote(context.TODO(), "", "")
+		_, err := sts.AddNote(context.TODO(), "", "")
 		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("happy-path", func(t *testing.T) {
@@ -26,10 +26,10 @@ func TestAddNote(t *testing.T) {
 		sts, err := NewStatusThingService(db)
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		ires, ierr := sts.NewItem(context.TODO(), t.Name())
+		ires, ierr := sts.AddItem(context.TODO(), t.Name())
 		require.NoError(t, ierr)
 		require.NotNil(t, ires)
-		res, reserr := sts.NewNote(context.TODO(), ires.GetId(), t.Name())
+		res, reserr := sts.AddNote(context.TODO(), ires.GetId(), t.Name())
 		require.NoError(t, reserr, "should not error")
 		require.NotNil(t, res)
 	})
@@ -39,7 +39,7 @@ func TestAddNote(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		res, err := sts.NewNote(context.TODO(), "", t.Name())
+		res, err := sts.AddNote(context.TODO(), "", t.Name())
 		require.ErrorIs(t, err, serrors.ErrEmptyString)
 		require.Nil(t, res)
 	})
@@ -49,7 +49,7 @@ func TestAddNote(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		res, err := sts.NewNote(context.TODO(), t.Name(), "")
+		res, err := sts.AddNote(context.TODO(), t.Name(), "")
 		require.ErrorIs(t, err, serrors.ErrEmptyString)
 		require.Nil(t, res)
 	})
@@ -107,7 +107,7 @@ func TestEditNote(t *testing.T) {
 func TestRemoveNote(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
-		err := sts.DeleteNote(context.TODO(), "")
+		err := sts.RemoveNote(context.TODO(), "")
 		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("happy-path", func(t *testing.T) {
@@ -116,7 +116,7 @@ func TestRemoveNote(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		err = sts.DeleteNote(context.TODO(), t.Name())
+		err = sts.RemoveNote(context.TODO(), t.Name())
 		require.NoError(t, err, "should not error")
 	})
 	t.Run("missing-note-id", func(t *testing.T) {
@@ -125,7 +125,7 @@ func TestRemoveNote(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		err = sts.DeleteNote(context.TODO(), "")
+		err = sts.RemoveNote(context.TODO(), "")
 		require.ErrorIs(t, err, serrors.ErrEmptyString)
 	})
 }
@@ -165,7 +165,7 @@ func TestGetNote(t *testing.T) {
 	t.Run("happy-path", func(t *testing.T) {
 		mem, _ := memdb.New()
 		sts := &StatusThingService{store: mem}
-		ires, ierr := sts.NewItem(ctx, t.Name(), filters.WithNoteText(t.Name()))
+		ires, ierr := sts.AddItem(ctx, t.Name(), filters.WithNoteText(t.Name()))
 		require.NoError(t, ierr)
 		require.NotNil(t, ires)
 		require.Len(t, ires.GetNotes(), 1)

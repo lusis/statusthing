@@ -12,11 +12,11 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-// NewStatus adds a new [statusthingv1.CustomStatus] with the provided name and [statusthingv1.StatusKind]
+// AddStatus adds a new [statusthingv1.CustomStatus] with the provided name and [statusthingv1.StatusKind]
 // supported filters:
 // - [filters.WithColor]
 // - [filters.WithDescription]
-func (sts *StatusThingService) NewStatus(ctx context.Context, statusName string, statusKind statusthingv1.StatusKind, opts ...filters.FilterOption) (*statusthingv1.Status, error) {
+func (sts *StatusThingService) AddStatus(ctx context.Context, statusName string, statusKind statusthingv1.StatusKind, opts ...filters.FilterOption) (*statusthingv1.Status, error) {
 	if sts.store == nil {
 		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
@@ -74,8 +74,8 @@ func (sts *StatusThingService) FindStatus(ctx context.Context, opts ...filters.F
 	return sts.store.FindStatus(ctx, opts...)
 }
 
-// DeleteStatus removes a [statusthingv1.Status] by its unique id
-func (sts *StatusThingService) DeleteStatus(ctx context.Context, statusID string) error {
+// RemoveStatus removes a [statusthingv1.Status] by its unique id
+func (sts *StatusThingService) RemoveStatus(ctx context.Context, statusID string) error {
 	if statusID == "" {
 		return fmt.Errorf("statusID: %w", serrors.ErrEmptyString)
 	}

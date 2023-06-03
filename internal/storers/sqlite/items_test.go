@@ -8,6 +8,7 @@ import (
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	"github.com/lusis/statusthing/internal/filters"
 	"github.com/lusis/statusthing/internal/serrors"
+	_ "github.com/lusis/statusthing/internal/storers/sqlite/driver" // sql driver
 	"github.com/lusis/statusthing/internal/testutils"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"

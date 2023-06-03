@@ -8,7 +8,14 @@ import (
 	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/storers"
 	"github.com/lusis/statusthing/internal/validation"
+
+	"google.golang.org/protobuf/proto"
 )
+
+// DbProtoable is something that can convert a dbresult to a protobuf message
+type DbProtoable interface {
+	ToProto() (proto.Message, error)
+}
 
 // DbCommon is a struct that maps to common fields we use
 type DbCommon struct {
@@ -61,7 +68,6 @@ func MakeDbCommon(id, name, desc string, timestamps *statusthingv1.Timestamps) (
 	if !validation.ValidString(name) {
 		return nil, serrors.NewError("name", serrors.ErrEmptyString)
 	}
-
 	dbc := &DbCommon{
 		ID:   id,
 		Name: name,

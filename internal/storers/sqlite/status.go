@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -11,9 +10,8 @@ import (
 	"github.com/lusis/statusthing/internal/filters"
 	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/storers/internal"
+	_ "github.com/lusis/statusthing/internal/storers/sqlite/driver" // sql driver
 	"github.com/lusis/statusthing/internal/validation"
-
-	"modernc.org/sqlite"
 )
 
 type dbStatus = internal.DbStatus
@@ -24,37 +22,25 @@ func (s *Store) StoreStatus(ctx context.Context, status *statusthingv1.Status) (
 	if recerr != nil {
 		return nil, recerr
 	}
+	if err := s.storeStruct(ctx, statusTableName, rec); err != nil {
+		return nil, err
+	}
 
-	ds := s.goqudb.Insert(statusTableName).Prepared(true).Rows(rec)
-	query, params, qerr := ds.ToSQL()
-	if qerr != nil {
-		return nil, serrors.NewWrappedError("querybuilder", serrors.ErrUnrecoverable, qerr)
-	}
-	res, reserr := s.db.ExecContext(ctx, query, params...)
-	if reserr != nil {
-		if e, ok := reserr.(*sqlite.Error); ok {
-			return nil, serrors.NewWrappedError("driver", serrors.ErrStoreUnavailable, e)
-		}
-		return nil, serrors.NewWrappedError("write", serrors.ErrUnrecoverable, reserr)
-	}
-	if _, lerr := res.LastInsertId(); lerr != nil {
-		return nil, serrors.NewWrappedError("last-insert-id", serrors.ErrUnrecoverable, lerr)
-	}
 	return s.GetStatus(ctx, rec.ID)
 }
 
 // GetStatus gets a [statusthingv1.Status] by its unique id
 func (s *Store) GetStatus(ctx context.Context, statusID string) (*statusthingv1.Status, error) {
 	rec := &dbStatus{}
-	ds := s.goqudb.From(statusTableName).Prepared(true)
-	found, ferr := ds.Where(goqu.C("id").Eq(statusID)).Order(goqu.C("id").Asc()).ScanStructContext(ctx, rec)
-	if ferr != nil {
-		return nil, serrors.NewWrappedError("read", serrors.ErrStoreUnavailable, ferr)
+	res, err := s.getProto(ctx, "id", statusID, statusTableName, rec)
+	if err != nil {
+		return nil, err
 	}
-	if found {
-		return rec.ToProto()
+	r, ok := res.(*statusthingv1.Status)
+	if !ok {
+		return nil, serrors.NewError("casting-status", serrors.ErrInvalidData)
 	}
-	return nil, serrors.NewError("status", serrors.ErrNotFound)
+	return r, nil
 }
 
 // FindStatus returns all know [statusthingv1.Status] optionally filtered by the provided [filters.FilterOption]
@@ -94,7 +80,7 @@ func (s *Store) FindStatus(ctx context.Context, opts ...filters.FilterOption) ([
 		if pberr != nil {
 			return nil, serrors.NewWrappedError("proto", serrors.ErrUnrecoverable, pberr)
 		}
-		pbResults = append(pbResults, pb)
+		pbResults = append(pbResults, pb.(*statusthingv1.Status))
 	}
 	return pbResults, nil
 }
@@ -128,20 +114,7 @@ func (s *Store) UpdateStatus(ctx context.Context, statusID string, opts ...filte
 	if validation.ValidString(desc) {
 		columns[descriptionColumn] = desc
 	}
-
-	query, params, qerr := s.goqudb.Update(statusTableName).Prepared(true).Where(goqu.C(idColumn).Eq(statusID)).Set(columns).ToSQL()
-	if qerr != nil {
-		return serrors.NewWrappedError("driver", serrors.ErrUnrecoverable, qerr)
-	}
-
-	res, reserr := s.db.ExecContext(ctx, query, params...)
-	if reserr != nil {
-		return serrors.NewWrappedError("write", serrors.ErrUnrecoverable, reserr)
-	}
-	if _, lerr := res.LastInsertId(); lerr != nil {
-		return serrors.NewWrappedError("last-insert-id", serrors.ErrUnrecoverable, lerr)
-	}
-	return nil
+	return s.update(ctx, statusTableName, idColumn, statusID, columns)
 }
 
 // DeleteStatus deletes a [statusthingv1.Status] by its id
@@ -153,18 +126,5 @@ func (s *Store) DeleteStatus(ctx context.Context, statusID string) error {
 	if _, existserr := s.GetStatus(ctx, statusID); existserr != nil {
 		return existserr
 	}
-	res, reserr := s.db.ExecContext(ctx, fmt.Sprintf("DELETE FROM %s WHERE id = ?", statusTableName), statusID)
-	if reserr != nil {
-		return serrors.NewWrappedError("write", serrors.ErrUnrecoverable, reserr)
-	}
-	affected, aferr := res.RowsAffected()
-	if aferr != nil {
-		return serrors.NewWrappedError("affected-rows", serrors.ErrUnrecoverable, aferr)
-	}
-	if affected != 1 {
-		// we checked for existence earlier so this should only return if we delete more than one row
-		// we don't need to account for zero rows here but we might want to do an optimistic delete instead and handle zero differently
-		return serrors.NewError(fmt.Sprintf("%d rows affected", affected), serrors.ErrUnexpectedRows)
-	}
-	return nil
+	return s.del(ctx, statusTableName, "id", statusID)
 }

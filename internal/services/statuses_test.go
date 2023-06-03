@@ -14,7 +14,7 @@ import (
 func TestAddStatus(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
-		_, err := sts.NewStatus(context.TODO(), "", 0)
+		_, err := sts.AddStatus(context.TODO(), "", 0)
 		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("happy-path", func(t *testing.T) {
@@ -23,7 +23,7 @@ func TestAddStatus(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		s, err := sts.NewStatus(context.TODO(), t.Name(), statusthingv1.StatusKind_STATUS_KIND_AVAILABLE)
+		s, err := sts.AddStatus(context.TODO(), t.Name(), statusthingv1.StatusKind_STATUS_KIND_AVAILABLE)
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, s, "should not be nil")
 	})
@@ -36,7 +36,7 @@ func TestAddStatus(t *testing.T) {
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
 		statusID := t.Name() + "_status_id"
-		s, err := sts.NewStatus(context.TODO(), t.Name(), statusthingv1.StatusKind_STATUS_KIND_AVAILABLE, filters.WithStatusID(statusID))
+		s, err := sts.AddStatus(context.TODO(), t.Name(), statusthingv1.StatusKind_STATUS_KIND_AVAILABLE, filters.WithStatusID(statusID))
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, s, "should not be nil")
 		// we use constructor so items will be added at instantiation
@@ -50,7 +50,7 @@ func TestAddStatus(t *testing.T) {
 		sts, err := NewStatusThingService(store)
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		s, err := sts.NewStatus(context.TODO(), t.Name(), statusthingv1.StatusKind_STATUS_KIND_AVAILABLE, filters.WithDescription(t.Name()))
+		s, err := sts.AddStatus(context.TODO(), t.Name(), statusthingv1.StatusKind_STATUS_KIND_AVAILABLE, filters.WithDescription(t.Name()))
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, s, "should not be nil")
 		// we use constructor so items will be added at instantiation
@@ -64,7 +64,7 @@ func TestAddStatus(t *testing.T) {
 		sts, err := NewStatusThingService(store)
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		s, err := sts.NewStatus(context.TODO(), t.Name(), statusthingv1.StatusKind_STATUS_KIND_AVAILABLE, filters.WithColor(t.Name()))
+		s, err := sts.AddStatus(context.TODO(), t.Name(), statusthingv1.StatusKind_STATUS_KIND_AVAILABLE, filters.WithColor(t.Name()))
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, s, "should not be nil")
 		// we use constructor so items will be added at instantiation
@@ -77,7 +77,7 @@ func TestAddStatus(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		s, err := sts.NewStatus(context.TODO(), "", statusthingv1.StatusKind_STATUS_KIND_AVAILABLE)
+		s, err := sts.AddStatus(context.TODO(), "", statusthingv1.StatusKind_STATUS_KIND_AVAILABLE)
 		require.ErrorIs(t, err, serrors.ErrEmptyString)
 		require.Nil(t, s, "should be nil")
 	})
@@ -87,7 +87,7 @@ func TestAddStatus(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		s, err := sts.NewStatus(context.TODO(), t.Name(), 0)
+		s, err := sts.AddStatus(context.TODO(), t.Name(), 0)
 		require.ErrorIs(t, err, serrors.ErrEmptyEnum)
 		require.Nil(t, s, "should be nil")
 	})
@@ -95,12 +95,12 @@ func TestAddStatus(t *testing.T) {
 func TestRemoveStatus(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
-		err := sts.DeleteStatus(context.TODO(), t.Name())
+		err := sts.RemoveStatus(context.TODO(), t.Name())
 		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("empty-id", func(t *testing.T) {
 		sts := &StatusThingService{store: &testStatusThingStore{}}
-		err := sts.DeleteStatus(context.TODO(), "")
+		err := sts.RemoveStatus(context.TODO(), "")
 		require.ErrorIs(t, err, serrors.ErrEmptyString)
 	})
 	t.Run("happy-path", func(t *testing.T) {
@@ -109,7 +109,7 @@ func TestRemoveStatus(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		err = sts.DeleteStatus(context.TODO(), t.Name())
+		err = sts.RemoveStatus(context.TODO(), t.Name())
 		require.NoError(t, err, "should not error")
 	})
 }

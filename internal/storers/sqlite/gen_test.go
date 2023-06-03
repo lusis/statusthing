@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
+	_ "github.com/lusis/statusthing/internal/storers/sqlite/driver" // sql driver
+
 	"github.com/lusis/statusthing/internal/filters"
 	"github.com/lusis/statusthing/internal/storers"
 	"github.com/lusis/statusthing/internal/testutils"

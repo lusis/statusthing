@@ -13,8 +13,8 @@ import (
 	"github.com/lusis/statusthing/internal/validation"
 )
 
-// NewNote adds the provided text as a [statusthingv1.Note] to the [statusthingv1.Item] with the provided id
-func (sts *StatusThingService) NewNote(ctx context.Context, itemID, noteText string) (*statusthingv1.Note, error) {
+// AddNote adds the provided text as a [statusthingv1.Note] to the [statusthingv1.Item] with the provided id
+func (sts *StatusThingService) AddNote(ctx context.Context, itemID, noteText string) (*statusthingv1.Note, error) {
 	if sts.store == nil {
 		return nil, fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}
@@ -64,8 +64,8 @@ func (sts *StatusThingService) EditNote(ctx context.Context, noteID, noteText st
 	return sts.store.UpdateNote(ctx, noteID, allowedOpts...)
 }
 
-// DeleteNote removes the [statusthingv1.Note] with the provided id from the [statusthingv1.Item] with the provided id
-func (sts *StatusThingService) DeleteNote(ctx context.Context, noteID string) error {
+// RemoveNote removes the [statusthingv1.Note] with the provided id from the [statusthingv1.Item] with the provided id
+func (sts *StatusThingService) RemoveNote(ctx context.Context, noteID string) error {
 	if sts.store == nil {
 		return fmt.Errorf("store was nil: %w", serrors.ErrStoreUnavailable)
 	}

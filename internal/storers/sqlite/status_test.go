@@ -8,6 +8,7 @@ import (
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	"github.com/lusis/statusthing/internal/filters"
 	"github.com/lusis/statusthing/internal/serrors"
+	_ "github.com/lusis/statusthing/internal/storers/sqlite/driver" // sql driver
 	"github.com/lusis/statusthing/internal/testutils"
 	"github.com/stretchr/testify/require"
 )
@@ -131,9 +132,11 @@ func TestFindStatus(t *testing.T) {
 	for n, tc := range testCases {
 		t.Run(n, func(t *testing.T) {
 			db, dberr := makeTestdb(t, ":memory:")
+			defer db.Close()
 			require.NoError(t, dberr)
 			require.NotNil(t, db)
-			store, _ := New(db)
+			store, err := New(db)
+			require.NoError(t, err)
 
 			for i, kind := range tc.kinds {
 				testStatus := testutils.MakeStatus(fmt.Sprintf("status-%d", i))
