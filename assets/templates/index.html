@@ -21,35 +21,47 @@
 <body>
     {{ block "navbar" .}}
     <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand"><a href="/">StatusThing</a></div>
+        <div class="navbar-brand">
+            <h1>StatusThing</h1>
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
         <div class="navbar-menu">
-            <div class="navbar-start"></div>
+            <div class="navbar-start" hx-target="#content">
+                {{ if .LoggedIn }}
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link" href="#">Items</a>
+                    <div class="navbar-dropdown is-boxed">
+                        <a class="navbar-item" href="items.html">List Items</a>
+                        <a class="navbar-item" href="add-item.html">Add Item</a>
+                    </div>
+                </div>
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link" href="#">Statuses</a>
+                    <div class="navbar-dropdown is-boxed">
+                        <a class="navbar-item" href="status.html">List Statuses</a>
+                        <a class="navbar-item" href="add-status.html">Add Status</a>
+                    </div>
+                </div>
+                {{ end }}
+            </div>
         </div>
         <div class="navbar-end" hx-target="#content">
             {{ if .LoggedIn }}
-            <div class="navbar-item has-dropdown">
-                <a class="navbar-link" href="#">Items</a>
-                <div class="navbar-dropdown">
-                    <a class="navbar-item" href="items.html">List Items</a>
-                    <a class="navbar-item" href="add-item.html">Add Item</a>
-                </div>
-            </div>
-            <div class="navbar-item has-dropdown">
-                <a class="navbar-link" href="#">Statuses</a>
-                <div class="navbar-dropdown">
-                    <a class="navbar-item" href="status.html">List Statuses</a>
-                    <a class="navbar-item" href="add-status.html">Add Status</a>
-                </div>
-            </div>
             <a class="navbar-item" href="profile.html"><i class="material-icons">person</i></a>
             <a class="navbar-item" href="settings.html"><i class="material-icons">settings</i></a>
             {{ else }}
-            <a class="navbar-item" href="#" hx-get="login-ui" hx-trigger="load"><i class="material-icons">person</i></a>
+            <a class="navbar-item" href="#" hx-get="login-ui" hx-trigger="load" hx-replace-url="login.html"><i
+                    class="material-icons">person</i></a>
             {{ end }}
         </div>
     </nav>
     {{ end }}
-    <div class="container" id="{{ .ContentDiv }}">
+    <div class="container is-max-desktop" id="{{ .ContentDiv }}">
         {{ if .LoggedIn }}
         <div class="columns is-centered">
             <div class="column is-full">

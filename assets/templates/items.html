@@ -2,7 +2,7 @@
 <html lang="en" class="has-navbar-fixed-top">
 {{ template "head" . }}
 
-<body>
+<body is-centered>
     {{ template "navbar" . }}
     <div class="container" id="{{ .ContentDiv }}">
         {{ block "list-items-ui" . }}
@@ -35,18 +35,33 @@
                                 <pre>{{ .Id }}</pre>
                             </td>
                             <td>{{ .Name }}</td>
+                            {{ if not .Description }}
+                            <td><a class="navbar-item" href="#" id="{{ .Id }}" name="add-item-description"><i
+                                        class="material-icons">add</i></a></td>
+                            {{ else }}
                             <td>{{ .Description }}</td>
+                            {{ end }}
                             {{ if not .Status }}
                             <td>no status assigned</td>
                             {{else}}
                             <td style="background-color: {{.Status.Color}};">{{ .Status.Name }}</td>
                             {{end}}
+
+                            {{ if not .Notes }}
+                            <td><a class="navbar-item" href="#" id="{{ .Id }} hx-get=" add-note-ui" hx-target="#content"
+                                    id="{{ .Id }}" name="add-note"><i class="material-icons">add</i></a></td>
+                            {{ else }}
                             <td><a class="navbar-item" href="#" hx-get="notes" hx-target="#content" id="{{ .Id }}"
                                     name="notes"><i class="material-icons">newspaper</i></a></td>
-                            <td><a class="navbar-item" href="#" hx-get="edit-item" hx-target="#content" id="{{ .Id }}"
-                                    name="edit-item"><i class="material-icons">edit</i></a></td>
+                            {{ end }}
+
+                            <td><a class="navbar-item" href="#" hx-get="edit-item-ui" hx-replace-url="edit-item.html"
+                                    hx-target="#content" id="{{ .Id }}" name="edit-item"><i
+                                        class="material-icons">edit</i></a></td>
+
                             <td><a class="navbar-item" href="#" hx-post="delete-item" hx-confirm="are you sure?"
-                                    id="{{ .Id }}" name="delete-item"><i class="material-icons">delete</i></a>
+                                    id="{{ .Id }}" name="delete-item" hx-replace-url="false"><i
+                                        class="material-icons">delete</i></a>
                             </td>
                         </tr>
                         {{end}}

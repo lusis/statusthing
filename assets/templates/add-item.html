@@ -6,13 +6,12 @@
     {{ template "navbar" . }}
     <div class="container" id="{{ .ContentDiv }}">
         {{ block "add-item-ui" .}}
-
         {{ if not .LoggedIn }}
         {{ template "login-ui" . }}
         {{ else }}
         <div class="columns is-centered">
             <div class="column is-full">
-                <form name="add-item" hx-post="/add-item">
+                <form name="add-item" hx-post="add-item">
                     <div class="field is-grouped">
                         <div class="control">
                             <label for="name">Name</label>

@@ -5,7 +5,7 @@
 <body>
     {{ template "navbar" . }}
     <div class="container" id="{{ .ContentDiv }}">
-        {{ block "list-items-ui" . }}
+        {{ block "settings-ui" . }}
         <div class="columns is-centered">
             <div class="column is-full">
                 {{ if not .LoggedIn }}
@@ -13,12 +13,13 @@
                 {{ else }}
                 <div class="columns is-centered">
                     <div class="column is-full">
-
+                        Settings
                     </div>
                 </div>
                 {{ end }}
             </div>
         </div>
+        {{ end }}
     </div>
 </body>
 
