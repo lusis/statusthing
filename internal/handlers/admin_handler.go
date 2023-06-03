@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi"
 
+	"github.com/lusis/htmxtools"
 	"github.com/lusis/statusthing/assets"
 	v1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	"github.com/lusis/statusthing/internal/filters"
@@ -24,16 +25,21 @@ import (
 )
 
 const (
-	contentDivID       = "content"
-	loginUIBlock       = "login-ui"
-	listItemsBlock     = "list-items-ui"
-	listStatusBlock    = "list-status-ui"
-	hxTriggerHeader    = "hx-trigger"
-	hxRedirectHeader   = "hx-redirect"
-	hxRequestHeader    = "hx-request"
-	hxLocationHeader   = "hx-location"
-	defaultUIDir       = "./assets/ui/"
-	defaultTemplateDir = "./assets/templates/"
+	contentDivTarget    = "#content"
+	contentDivID        = "content"
+	loginUIBlock        = "login-ui"
+	listItemsBlock      = "list-items-ui"
+	listStatusBlock     = "list-status-ui"
+	hxCurrentURLHeader  = "hx-current-url"
+	hxTriggerHeader     = "hx-trigger"
+	hxTriggerNameHeader = "hx-trigger-name"
+	hxTargetHeader      = "hx-target"
+	hxRedirectHeader    = "hx-redirect"
+	hxRequestHeader     = "hx-request"
+	hxLocationHeader    = "hx-location"
+	hxReplaceURLHeader  = "hx-replace-url"
+	defaultUIDir        = "./assets/ui/"
+	defaultTemplateDir  = "./assets/templates/"
 )
 
 // AdminHandler is the http handler for the admin site
@@ -55,7 +61,11 @@ func NewAdminHandler(sts *services.StatusThingService, mux chi.Router, reloadabl
 			return sts.FindItems(context.TODO())
 		},
 		"statuses": func() ([]*v1.Status, error) {
-			return sts.FindStatus(context.TODO())
+			res, err := sts.FindStatus(context.TODO())
+			if err != nil {
+				return nil, err
+			}
+			return res, nil
 		},
 		"notes": func(itemID string) ([]*v1.Note, error) {
 			return sts.FindNotes(context.TODO(), itemID)
@@ -125,17 +135,32 @@ func newAdminHandler(sts *services.StatusThingService, uifs fs.FS, templatefs fs
 	ourmux := chi.NewRouter()
 	session.NewSession()
 	ourmux.Use(session.Sessions.LoadAndSave)
+	ourmux.Use(htmxtools.Wrap)
 	ourmux.Get("/*", handler.templateHandler(http.FileServer(http.FS(uifs))))
-	ourmux.Post("/login", handler.login)
-	ourmux.Post("/add-status", handler.addStatus)
-	ourmux.Post("/add-item", handler.addItem)
-	ourmux.Post("/delete-item", handler.deleteItem)
-	ourmux.Post("/delete-status", handler.deleteStatus)
+	ourmux.Post("/login", hxonly(handler.login))
+	ourmux.Post("/add-status", hxonly(handler.addStatus))
+	ourmux.Post("/add-item", hxonly(handler.addItem))
+	ourmux.Post("/delete-item", hxonly(handler.deleteItem))
+	ourmux.Post("/delete-status", hxonly(handler.deleteStatus))
+	ourmux.Post("/edit-item", hxonly(handler.addItem))
+	ourmux.Post("/edit-status", hxonly(handler.addStatus))
+	ourmux.Route("/statuses", func(r chi.Router) {})
+	ourmux.Route("/items", func(r chi.Router) {})
 	handler.mux = ourmux
 	mux.Mount("/", ourmux)
 	return handler, nil
 }
 
+func hxonly(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		htmxreq := htmxtools.RequestFromContext(r.Context())
+		if htmxreq == nil {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		next(w, r)
+	}
+}
 func (ah *AdminHandler) login(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		slog.Error("unable to parse form", "error", err)
@@ -164,10 +189,6 @@ func (ah *AdminHandler) login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ah *AdminHandler) addItem(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get(hxRequestHeader) != "true" {
-		slog.Error("ignore non-htmx request")
-		return
-	}
 	if err := r.ParseForm(); err != nil {
 		slog.Error("unable to parse form", "error", err)
 		return
@@ -188,13 +209,12 @@ func (ah *AdminHandler) addItem(w http.ResponseWriter, r *http.Request) {
 	if validation.ValidString(description) {
 		opts = append(opts, filters.WithDescription(description))
 	}
-	res, err := ah.sts.NewItem(r.Context(), name, opts...)
+	res, err := ah.sts.AddItem(r.Context(), name, opts...)
 	if err != nil {
 		slog.Error("unable to add item", "error", err)
 	} else {
 		slog.Info("created item", "item_id", res.GetId())
-		w.Header().Add(buildHXLocation(listItemsBlock))
-		w.WriteHeader(http.StatusAccepted)
+		w.Header().Add(htmxtools.RedirectResponse.String(), "items.html")
 		return
 	}
 }
@@ -206,46 +226,74 @@ func (ah *AdminHandler) addStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	vars := r.Form
 	statusKind := v1.StatusKind_value[vars.Get("kind")]
-	res, err := ah.sts.NewStatus(r.Context(), vars.Get("name"), v1.StatusKind(statusKind), filters.WithColor(vars.Get("color")))
+	f := []filters.FilterOption{}
+	if validation.ValidString(vars.Get("description")) {
+		f = append(f, filters.WithDescription(vars.Get("description")))
+	}
+	if validation.ValidString(vars.Get("color")) {
+		f = append(f, filters.WithColor(vars.Get("color")))
+	}
+	res, err := ah.sts.AddStatus(r.Context(), vars.Get("name"), v1.StatusKind(statusKind), f...)
 	if err != nil {
 		slog.Error("unable to add status", "error", err)
 	} else {
 		slog.Info("added status", "status_id", res.GetId())
-		w.Header().Add(buildHXLocation(listStatusBlock))
+		w.Header().Add(htmxtools.RedirectResponse.String(), "status.html")
 		w.WriteHeader(http.StatusAccepted)
 		return
 	}
 }
 
 func (ah *AdminHandler) deleteItem(w http.ResponseWriter, r *http.Request) {
-	id := r.Header.Get(hxTriggerHeader)
+	htmxreq := htmxtools.RequestFromContext(r.Context())
+	if htmxreq == nil {
+		return
+	}
+
+	id := htmxreq.Trigger
 	if !validation.ValidString(id) {
 		return
 	}
 
-	err := ah.sts.DeleteItem(r.Context(), id)
+	err := ah.sts.RemoveItem(r.Context(), id)
 	if err != nil {
 		slog.Error("unable to delete item", "error", err)
 	} else {
 		slog.Info("deleted item", "item_id", id)
-		w.Header().Add(buildHXLocation(listItemsBlock))
+		locresp := &htmxtools.HXLocationResponse{
+			Path:   listItemsBlock,
+			Target: contentDivTarget,
+		}
+		resph := &htmxtools.HTMXResponse{
+			Location: locresp.String(),
+		}
+		if err := resph.AddToResponse(w); err != nil {
+			slog.Error("error adding headers", "error", err)
+			return
+		}
+		w.Header().Add(htmxtools.RedirectResponse.String(), "items.html")
 		w.WriteHeader(http.StatusAccepted)
 		return
 	}
 }
 
 func (ah *AdminHandler) deleteStatus(w http.ResponseWriter, r *http.Request) {
-	id := r.Header.Get(hxTriggerHeader)
+	htmxreq := htmxtools.RequestFromContext(r.Context())
+	if htmxreq == nil {
+		return
+	}
+
+	id := htmxreq.Trigger
 	if !validation.ValidString(id) {
 		return
 	}
 
-	err := ah.sts.DeleteStatus(r.Context(), id)
+	err := ah.sts.RemoveStatus(r.Context(), id)
 	if err != nil {
 		slog.Error("unable to delete status", "error", err)
 	} else {
 		slog.Info("deleted status", "status_id", id)
-		w.Header().Add(buildHXLocation(listStatusBlock))
+		w.Header().Add(htmxtools.RedirectResponse.String(), "status.html")
 		w.WriteHeader(http.StatusAccepted)
 		return
 	}
@@ -279,12 +327,23 @@ func (ah *AdminHandler) templateHandler(next http.Handler) http.HandlerFunc {
 	}
 }
 
+type hxRequest struct {
+	Trigger     string
+	Target      string
+	TriggerName string
+	CurrentURL  string
+}
 type siteData struct {
 	LoggedIn   bool
 	UserID     string
 	ContentDiv string
+	HXRequest  hxRequest
 }
 
 func buildHXLocation(path string) (string, string) {
-	return hxLocationHeader, fmt.Sprintf(`{"path":"%s", "target":"#%s"}`, path, contentDivID)
+	return hxLocationHeader, fmt.Sprintf(`{"path":"%s", "target":"%s"}`, path, contentDivTarget)
+}
+
+func buildHXReplace(url string) (string, string) {
+	return hxReplaceURLHeader, url
 }

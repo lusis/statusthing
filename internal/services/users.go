@@ -106,10 +106,10 @@ func (sts *StatusThingService) ChangePassword(ctx context.Context, username stri
 
 // EditUser edits the user
 func (sts *StatusThingService) EditUser(ctx context.Context, username string, opts ...filters.FilterOption) error {
-	return nil
+	return sts.store.UpdateUser(ctx, username, opts...)
 }
 
 // RemoveUser removes the user
 func (sts *StatusThingService) RemoveUser(ctx context.Context, username string) error {
-	return nil
+	return sts.store.DeleteUser(ctx, username)
 }

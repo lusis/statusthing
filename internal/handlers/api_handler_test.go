@@ -351,13 +351,13 @@ func TestGetItems(t *testing.T) {
 
 			if len(tc.createStatuses) != 0 {
 				for idx, s := range tc.createStatuses {
-					_, err := api.sts.NewStatus(ctx, fmt.Sprintf("%s-%d", s.status.GetName(), idx), s.status.GetKind(), s.opts...)
+					_, err := api.sts.AddStatus(ctx, fmt.Sprintf("%s-%d", s.status.GetName(), idx), s.status.GetKind(), s.opts...)
 					require.NoError(t, err)
 				}
 			}
 			if len(tc.createItems) != 0 {
 				for _, i := range tc.createItems {
-					_, err := api.sts.NewItem(ctx, i.item.GetName(), i.opts...)
+					_, err := api.sts.AddItem(ctx, i.item.GetName(), i.opts...)
 					require.NoError(t, err)
 				}
 			}
@@ -465,7 +465,7 @@ func TestAddItem(t *testing.T) {
 			// create any statuses if requested
 			for _, s := range tc.statuses {
 				// we're just going to go to the status service to add these
-				_, err = api.sts.NewStatus(ctx, s.name, s.kind, s.opts...)
+				_, err = api.sts.AddStatus(ctx, s.name, s.kind, s.opts...)
 				require.NoError(t, err)
 			}
 
@@ -642,7 +642,7 @@ func TestGetNotes(t *testing.T) {
 		defer httpSrv.Close()
 		require.NoError(t, err)
 
-		_, err = api.sts.NewItem(ctx, t.Name(), filters.WithItemID(t.Name()), filters.WithNoteText("yoooooo"))
+		_, err = api.sts.AddItem(ctx, t.Name(), filters.WithItemID(t.Name()), filters.WithNoteText("yoooooo"))
 		require.NoError(t, err)
 
 		// act
@@ -678,7 +678,7 @@ func TestAddNote(t *testing.T) {
 		defer httpSrv.Close()
 		require.NoError(t, err)
 
-		_, err = api.sts.NewItem(ctx, t.Name(), filters.WithItemID(t.Name()))
+		_, err = api.sts.AddItem(ctx, t.Name(), filters.WithItemID(t.Name()))
 		require.NoError(t, err)
 
 		// act
@@ -713,10 +713,10 @@ func TestDeleteNote(t *testing.T) {
 		defer httpSrv.Close()
 		require.NoError(t, err)
 
-		item, err := api.sts.NewItem(ctx, t.Name())
+		item, err := api.sts.AddItem(ctx, t.Name())
 		require.NoError(t, err, "item create should not err")
 		require.NotNil(t, item, "created item should not be nil")
-		note, err := api.sts.NewNote(ctx, item.GetId(), t.Name())
+		note, err := api.sts.AddNote(ctx, item.GetId(), t.Name())
 		require.NoError(t, err, "note create should not error")
 		require.NotNil(t, note, "created note should not be nil")
 
@@ -750,11 +750,11 @@ func TestUpdateNote(t *testing.T) {
 		defer httpSrv.Close()
 		require.NoError(t, err)
 
-		item, err := api.sts.NewItem(ctx, t.Name())
+		item, err := api.sts.AddItem(ctx, t.Name())
 		require.NoError(t, err, "create item should not fail")
 		require.NotNil(t, item, "created item should not be nil")
 
-		note, err := api.sts.NewNote(ctx, item.GetId(), t.Name())
+		note, err := api.sts.AddNote(ctx, item.GetId(), t.Name())
 		require.NoError(t, err, "create note should not error")
 		require.NotNil(t, note, "created note should not be nil")
 
@@ -788,11 +788,11 @@ func TestGetNote(t *testing.T) {
 		defer httpSrv.Close()
 		require.NoError(t, err)
 
-		item, err := api.sts.NewItem(ctx, t.Name())
+		item, err := api.sts.AddItem(ctx, t.Name())
 		require.NoError(t, err, "create item should not fail")
 		require.NotNil(t, item, "created item should not be nil")
 
-		note, err := api.sts.NewNote(ctx, item.GetId(), t.Name())
+		note, err := api.sts.AddNote(ctx, item.GetId(), t.Name())
 		require.NoError(t, err, "create note should not error")
 		require.NotNil(t, note, "created note should not be nil")
 
@@ -828,7 +828,7 @@ func TestGetItem(t *testing.T) {
 		defer httpSrv.Close()
 		require.NoError(t, err)
 
-		item, err := api.sts.NewItem(ctx, t.Name(), filters.WithItemID(t.Name()))
+		item, err := api.sts.AddItem(ctx, t.Name(), filters.WithItemID(t.Name()))
 		require.NoError(t, err, "create item should not fail")
 		require.NotNil(t, item, "created item should not be nil")
 

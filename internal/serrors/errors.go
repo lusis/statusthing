@@ -56,3 +56,6 @@ var ErrMissingCredentials = fmt.Errorf("missing credentials")
 
 // ErrDependencyMissing is the error when a dependency fails to create
 var ErrDependencyMissing = fmt.Errorf("required dependency failed")
+
+// ErrInvalidPassword is the error when a password is invalid
+var ErrInvalidPassword = fmt.Errorf("invalid password")

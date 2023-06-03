@@ -3,7 +3,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/lusis/statusthing/internal"
 	"github.com/lusis/statusthing/internal/storers/sqlite"
+	"github.com/lusis/statusthing/migrations"
 
 	"golang.org/x/exp/slog"
 )
@@ -26,15 +26,12 @@ func main() {
 	logger := slog.New(logHandler)
 	slog.SetDefault(logger)
 	flag.Parse()
-	db, err := sql.Open("sqlite3", "statusthing.db")
+	db, err := migrations.MigrateDatabase(context.TODO(), "sqlite3", "statusthing.db", logHandler)
 	if err != nil {
-		logger.Error("unable to create db file", "error", err)
+		logger.Error("error migrating database", "error", err)
 		os.Exit(1)
 	}
-	if err := sqlite.CreateTables(context.TODO(), db); err != nil {
-		logger.Error("error creating tables", "error", err)
-		os.Exit(1)
-	}
+
 	store, err := sqlite.New(db)
 	if err != nil {
 		logger.Error("unable to create store", "error", err)
