@@ -63,6 +63,18 @@ enum StatusKind {
     STATUS_KIND_DECOMM = 11;
 }
 
+message User {
+    string id = 1;
+    string username = 2;
+    string password = 3;
+    string first_name = 4;
+    string last_name = 5;
+    string email_address = 6;
+    google.protobuf.Timestamp last_login = 7;
+
+    Timestamps timestamps = 15;
+}
+
 message Timestamps {
     google.protobuf.Timestamp created = 1;
     google.protobuf.Timestamp updated = 2;
