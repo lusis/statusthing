@@ -208,7 +208,6 @@ func TestUpdateItem(t *testing.T) {
 		item, itemerr := store.StoreItem(ctx, testutils.MakeItem(t.Name()))
 		require.NoError(t, itemerr)
 		require.NotNil(t, item)
-		t.Logf("item: %+v\n", item)
 
 		uerr := store.UpdateItem(ctx, item.GetId(), filters.WithStatusID("invalid"))
 		require.Error(t, uerr, serrors.ErrNotFound)

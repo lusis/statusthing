@@ -18,6 +18,7 @@ type DbUser struct {
 	LastName     *string `db:"last_name"`
 	EmailAddress *string `db:"email_address"`
 	LastLogin    *uint64 `db:"last_login"`
+	AvatarURL    *string `db:"avatar_url"`
 	*DbTimestamps
 }
 

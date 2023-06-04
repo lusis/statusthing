@@ -27,6 +27,7 @@ import (
 var migrationFS embed.FS
 
 // MigrateDatabase migrates the database of type dbType using the provided db
+// Caller is responsible for closing the db connection after
 // TODO: Don't know how I feel about returning the db here but it works for now
 func MigrateDatabase(_ context.Context, driver string, dsn string, handler slog.Handler) (*sql.DB, error) {
 	if !validation.ValidString(driver) {

@@ -44,7 +44,7 @@ func WithTimestamps(ts *statusthingv1.Timestamps) FilterOption {
 }
 
 // WithLastLogin sets the last login
-func (f *Filters) WithLastLogin(lastlogin *time.Time) FilterOption {
+func WithLastLogin(lastlogin *time.Time) FilterOption {
 	return func(f *Filters) error {
 		if lastlogin == nil {
 			return serrors.NewError("lastlogin", serrors.ErrNilVal)

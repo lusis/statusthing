@@ -22,7 +22,7 @@ func (s *Store) StoreUser(ctx context.Context, user *v1.User) (*v1.User, error) 
 	if err := s.storeStruct(ctx, usersTableName, rec); err != nil {
 		return nil, err
 	}
-	return s.GetUser(ctx, rec.ID)
+	return s.GetUser(ctx, rec.Username)
 }
 
 // GetUser gets a [v1.User] by id
@@ -78,7 +78,7 @@ func (s *Store) UpdateUser(ctx context.Context, username string, opts ...filters
 	if lastlogin != nil {
 		columns[lastloginColumn] = storers.TimeToUint64(lastlogin)
 	}
-	return s.update(ctx, statusTableName, idColumn, username, columns)
+	return s.update(ctx, usersTableName, usernameColumn, username, columns)
 }
 
 // DeleteUser deletes a [v1.User]
@@ -86,5 +86,5 @@ func (s *Store) DeleteUser(ctx context.Context, username string) error {
 	if _, existserr := s.GetUser(ctx, username); existserr != nil {
 		return existserr
 	}
-	return s.del(ctx, usersTableName, "username", username)
+	return s.del(ctx, usersTableName, usernameColumn, username)
 }
