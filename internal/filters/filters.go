@@ -56,6 +56,8 @@ type Filters struct {
 	avatarURL *string
 	// avatar stores the avatar image
 	avatar []byte
+	// stores a new password for a password change
+	password *string
 }
 
 // New returns a new [Filters] configured with the provided [FilterOption]

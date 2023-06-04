@@ -117,8 +117,5 @@ func WithUserID(id string) FilterOption {
 func (f *Filters) UserID() string {
 	f.l.RLock()
 	defer f.l.RUnlock()
-	if f.userid == nil {
-		return ""
-	}
-	return *f.userid
+	return safeString(f.userid)
 }

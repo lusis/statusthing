@@ -60,6 +60,7 @@ func (s *Store) UpdateUser(ctx context.Context, username string, opts ...filters
 	email := f.EmailAddress()
 	lastlogin := f.LastLogin()
 	avatarURL := f.AvatarURL()
+	password := f.Password()
 
 	columns := map[string]any{}
 
@@ -74,6 +75,9 @@ func (s *Store) UpdateUser(ctx context.Context, username string, opts ...filters
 	}
 	if validation.ValidString(avatarURL) {
 		columns[avatarURLColumn] = avatarURL
+	}
+	if validation.ValidString(password) {
+		columns[passwordColumn] = password
 	}
 	if lastlogin != nil {
 		columns[lastloginColumn] = storers.TimeToUint64(lastlogin)

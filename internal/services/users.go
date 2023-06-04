@@ -32,7 +32,7 @@ func (sts *StatusThingService) AddUser(ctx context.Context, username string, pas
 		return nil, err
 	}
 	id := ksuid.New().String()
-	if validation.ValidString(f.StatusID()) {
+	if validation.ValidString(f.UserID()) {
 		id = f.UserID()
 	}
 	hash, err := argon2id.CreateHash(password, argon2id.DefaultParams)
@@ -85,23 +85,28 @@ func (sts *StatusThingService) CheckPassword(ctx context.Context, username strin
 	if !validation.ValidString(password) {
 		return nil, serrors.NewError("password", serrors.ErrEmptyEnum)
 	}
-	res, err := sts.store.GetUser(ctx, username)
-	if err != nil {
-		return nil, err
-	}
-	match, _, err := argon2id.CheckHash(password, res.GetPassword())
-	if err != nil {
-		return nil, serrors.NewWrappedError("password", serrors.ErrInvalidPassword, err)
-	}
-	if !match {
-		return nil, serrors.NewError("password", serrors.ErrInvalidPassword)
-	}
-	return res, nil
+	return sts.checkPassword(ctx, username, password)
 }
 
 // ChangePassword changes the password
 func (sts *StatusThingService) ChangePassword(ctx context.Context, username string, currPass string, newPass string) error {
-	return nil
+	if sts.store == nil {
+		return serrors.NewError("store", serrors.ErrStoreUnavailable)
+	}
+	if !validation.ValidString(username) {
+		return serrors.NewError("username", serrors.ErrEmptyString)
+	}
+	if !validation.ValidString(currPass) {
+		return serrors.NewError("current password", serrors.ErrEmptyEnum)
+	}
+	if !validation.ValidString(newPass) {
+		return serrors.NewError("new password", serrors.ErrEmptyEnum)
+	}
+
+	if _, err := sts.checkPassword(ctx, username, currPass); err != nil {
+		return err
+	}
+	return sts.EditUser(ctx, username, filters.WithPassword(newPass))
 }
 
 // EditUser edits the user
@@ -112,4 +117,23 @@ func (sts *StatusThingService) EditUser(ctx context.Context, username string, op
 // RemoveUser removes the user
 func (sts *StatusThingService) RemoveUser(ctx context.Context, username string) error {
 	return sts.store.DeleteUser(ctx, username)
+}
+
+func (sts *StatusThingService) checkPassword(ctx context.Context, username, providedPassword string) (*v1.User, error) {
+	if sts.store == nil {
+		return nil, serrors.NewError("store", serrors.ErrStoreUnavailable)
+	}
+
+	res, err := sts.store.GetUser(ctx, username)
+	if err != nil {
+		return nil, err
+	}
+	match, _, err := argon2id.CheckHash(providedPassword, res.GetPassword())
+	if err != nil {
+		return nil, serrors.NewWrappedError("password-check", serrors.ErrInvalidPassword, err)
+	}
+	if !match {
+		return nil, serrors.ErrInvalidPassword
+	}
+	return res, nil
 }
