@@ -10,13 +10,13 @@ import (
 	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/validation"
 	"github.com/lusis/statusthing/migrations/sqlite3"
+
 	"golang.org/x/exp/slog"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 
-	_ "github.com/go-sql-driver/mysql"                      // import mysql driver
 	_ "github.com/golang-migrate/migrate/v4/database/mysql" // mysql migrate driver
 	_ "github.com/golang-migrate/migrate/v4/source/file"    // for loading migrations
 )

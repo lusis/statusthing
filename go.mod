@@ -5,7 +5,6 @@ go 1.20
 require (
 	github.com/bufbuild/connect-go v1.7.0
 	github.com/doug-martin/goqu/v9 v9.18.0
-	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang-migrate/migrate/v4 v4.16.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/lusis/htmxtools v0.0.1
@@ -18,6 +17,7 @@ require (
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
