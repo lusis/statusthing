@@ -21,7 +21,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"    // for loading migrations
 )
 
-//go:embed data/sqlite/*
+//go:embed all:data
 var migrationFS embed.FS
 
 // MigrateDatabase migrates the database of type dbType using the provided db
