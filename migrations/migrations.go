@@ -23,7 +23,7 @@ import (
 
 // migrationFS is the filesystem storing migrations
 //
-//go:embed all:data
+//go:embed data/*
 var migrationFS embed.FS
 
 // MigrateDatabase migrates the database of type dbType using the provided db
