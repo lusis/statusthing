@@ -21,9 +21,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"    // for loading migrations
 )
 
-// migrationFS is the filesystem storing migrations
-//
-//go:embed data/*
+//go:embed data/sqlite/*
 var migrationFS embed.FS
 
 // MigrateDatabase migrates the database of type dbType using the provided db
