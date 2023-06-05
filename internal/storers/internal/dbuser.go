@@ -34,6 +34,7 @@ func DbUserFromProto(pbuser *v1.User) (*DbUser, error) {
 	lname := pbuser.GetLastName()
 	email := pbuser.GetEmailAddress()
 	lastlogin := pbuser.GetLastLogin()
+	avatarURL := pbuser.GetAvatarUrl()
 	timestamps, err := MakeDbTimestamps(pbuser.GetTimestamps())
 	if err != nil {
 		return nil, err
@@ -62,6 +63,9 @@ func DbUserFromProto(pbuser *v1.User) (*DbUser, error) {
 	}
 	if validation.ValidString(email) {
 		res.EmailAddress = &email
+	}
+	if validation.ValidString(avatarURL) {
+		res.AvatarURL = &avatarURL
 	}
 	if err := lastlogin.CheckValid(); err == nil {
 		res.LastLogin = storers.TsToUInt64Ptr(lastlogin)
@@ -113,6 +117,9 @@ func (u *DbUser) ToProto() (proto.Message, error) {
 	}
 	if u.EmailAddress != nil {
 		res.EmailAddress = *u.EmailAddress
+	}
+	if u.AvatarURL != nil {
+		res.AvatarUrl = *u.AvatarURL
 	}
 	return res, nil
 }
