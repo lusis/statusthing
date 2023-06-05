@@ -117,7 +117,7 @@ func TestItems(t *testing.T) {
 				require.NotNil(t, sres)
 			}
 
-			ires, ierr := sts.NewItem(ctx, item.GetName(), tc.opts...)
+			ires, ierr := sts.AddItem(ctx, item.GetName(), tc.opts...)
 			if tc.err != nil {
 				require.ErrorIs(t, ierr, tc.err)
 				require.Nil(t, ires)
@@ -146,7 +146,7 @@ func TestEditItem(t *testing.T) {
 	sts := &StatusThingService{store: mem}
 	ctx := context.TODO()
 
-	res, err := sts.NewItem(ctx, t.Name())
+	res, err := sts.AddItem(ctx, t.Name())
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
@@ -162,7 +162,7 @@ func TestEditItem(t *testing.T) {
 func TestAddItem(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
-		_, err := sts.NewItem(context.TODO(), "")
+		_, err := sts.AddItem(context.TODO(), "")
 		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("happy-path", func(t *testing.T) {
@@ -171,7 +171,7 @@ func TestAddItem(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		res, err := sts.NewItem(context.TODO(), t.Name())
+		res, err := sts.AddItem(context.TODO(), t.Name())
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, res, "should not be nil")
 		require.NotEmpty(t, res.GetId(), "id should be populated")
@@ -182,7 +182,7 @@ func TestAddItem(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		res, err := sts.NewItem(context.TODO(), t.Name(), filters.WithItemID(t.Name()))
+		res, err := sts.AddItem(context.TODO(), t.Name(), filters.WithItemID(t.Name()))
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, res, "should not be nil")
 		require.Equal(t, t.Name(), res.GetId())
@@ -195,7 +195,7 @@ func TestAddItem(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		res, err := sts.NewItem(context.TODO(), t.Name(), filters.WithStatusID(t.Name()+"_status_id"))
+		res, err := sts.AddItem(context.TODO(), t.Name(), filters.WithStatusID(t.Name()+"_status_id"))
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, res, "should not be nil")
 		require.Equal(t, t.Name()+"_status_id", res.GetStatus().GetId())
@@ -206,7 +206,7 @@ func TestAddItem(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		res, err := sts.NewItem(context.TODO(), t.Name(), filters.WithDescription(t.Name()))
+		res, err := sts.AddItem(context.TODO(), t.Name(), filters.WithDescription(t.Name()))
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, res, "should not be nil")
 		require.Equal(t, t.Name(), res.GetDescription())
@@ -216,7 +216,7 @@ func TestAddItem(t *testing.T) {
 func TestRemoveItem(t *testing.T) {
 	t.Run("nil-store", func(t *testing.T) {
 		sts := &StatusThingService{}
-		err := sts.DeleteItem(context.TODO(), "")
+		err := sts.RemoveItem(context.TODO(), "")
 		require.ErrorIs(t, err, serrors.ErrStoreUnavailable)
 	})
 	t.Run("happy-path", func(t *testing.T) {
@@ -225,7 +225,7 @@ func TestRemoveItem(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		err = sts.DeleteItem(context.TODO(), t.Name())
+		err = sts.RemoveItem(context.TODO(), t.Name())
 		require.NoError(t, err, "should not error")
 	})
 	t.Run("missing-thing-id", func(t *testing.T) {
@@ -234,7 +234,7 @@ func TestRemoveItem(t *testing.T) {
 		})
 		require.NoError(t, err, "should not error")
 		require.NotNil(t, sts, "should not be nil")
-		err = sts.DeleteItem(context.TODO(), "")
+		err = sts.RemoveItem(context.TODO(), "")
 		require.ErrorIs(t, err, serrors.ErrEmptyString)
 	})
 }
@@ -247,7 +247,7 @@ func TestAllItems(t *testing.T) {
 		require.NotNil(t, svc)
 
 		for _, status := range svc.GetCreatedDefaults() {
-			ires, ierr := svc.NewItem(ctx, status.GetName(), filters.WithStatus(status))
+			ires, ierr := svc.AddItem(ctx, status.GetName(), filters.WithStatus(status))
 			require.NoError(t, ierr)
 			require.NotNil(t, ires)
 

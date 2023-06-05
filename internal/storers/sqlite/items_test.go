@@ -8,6 +8,7 @@ import (
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	"github.com/lusis/statusthing/internal/filters"
 	"github.com/lusis/statusthing/internal/serrors"
+	_ "github.com/lusis/statusthing/internal/storers/sqlite/driver" // sql driver
 	"github.com/lusis/statusthing/internal/testutils"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -207,7 +208,6 @@ func TestUpdateItem(t *testing.T) {
 		item, itemerr := store.StoreItem(ctx, testutils.MakeItem(t.Name()))
 		require.NoError(t, itemerr)
 		require.NotNil(t, item)
-		t.Logf("item: %+v\n", item)
 
 		uerr := store.UpdateItem(ctx, item.GetId(), filters.WithStatusID("invalid"))
 		require.Error(t, uerr, serrors.ErrNotFound)

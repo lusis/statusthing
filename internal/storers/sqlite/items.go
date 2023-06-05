@@ -13,7 +13,9 @@ import (
 	"github.com/lusis/statusthing/internal/filters"
 	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/storers/internal"
+	_ "github.com/lusis/statusthing/internal/storers/sqlite/driver" // sql driver
 	"github.com/lusis/statusthing/internal/validation"
+
 	"google.golang.org/protobuf/proto"
 	"modernc.org/sqlite"
 )

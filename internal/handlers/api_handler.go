@@ -83,7 +83,7 @@ func (api *APIHandler) AddItem(ctx context.Context, req *connect.Request[v1.AddI
 	if strings.TrimSpace(initialNote) != "" {
 		opts = append(opts, filters.WithNoteText(initialNote))
 	}
-	res, err := api.sts.NewItem(ctx, name, opts...)
+	res, err := api.sts.AddItem(ctx, name, opts...)
 	if err != nil {
 		return nil, handleError(err)
 	}
@@ -121,7 +121,7 @@ func (api *APIHandler) UpdateItem(ctx context.Context, req *connect.Request[v1.U
 // DeleteItem deletes an exisiting Item
 func (api *APIHandler) DeleteItem(ctx context.Context, req *connect.Request[v1.DeleteItemRequest]) (*connect.Response[v1.DeleteItemResponse], error) {
 	itemID := req.Msg.GetItemId()
-	if err := api.sts.DeleteItem(ctx, itemID); err != nil {
+	if err := api.sts.RemoveItem(ctx, itemID); err != nil {
 		return nil, handleError(err)
 	}
 	return &connect.Response[v1.DeleteItemResponse]{}, nil
@@ -151,7 +151,7 @@ func (api *APIHandler) ListNotes(ctx context.Context, req *connect.Request[v1.Li
 func (api *APIHandler) AddNote(ctx context.Context, req *connect.Request[v1.AddNoteRequest]) (*connect.Response[v1.AddNoteResponse], error) {
 	itemID := req.Msg.GetItemId()
 	noteText := req.Msg.GetNoteText()
-	res, err := api.sts.NewNote(ctx, itemID, noteText)
+	res, err := api.sts.AddNote(ctx, itemID, noteText)
 	if err != nil {
 		return nil, handleError(err)
 	}
@@ -171,7 +171,7 @@ func (api *APIHandler) UpdateNote(ctx context.Context, req *connect.Request[v1.U
 // DeleteNote deletes a Note from an Item
 func (api *APIHandler) DeleteNote(ctx context.Context, req *connect.Request[v1.DeleteNoteRequest]) (*connect.Response[v1.DeleteNoteResponse], error) {
 	noteID := req.Msg.GetNoteId()
-	if err := api.sts.DeleteNote(ctx, noteID); err != nil {
+	if err := api.sts.RemoveNote(ctx, noteID); err != nil {
 		return nil, handleError(err)
 	}
 	return &connect.Response[v1.DeleteNoteResponse]{}, nil
@@ -214,7 +214,7 @@ func (api *APIHandler) AddStatus(ctx context.Context, req *connect.Request[v1.Ad
 	if strings.TrimSpace(desc) != "" {
 		opts = append(opts, filters.WithDescription(desc))
 	}
-	res, err := api.sts.NewStatus(ctx, name, kind, opts...)
+	res, err := api.sts.AddStatus(ctx, name, kind, opts...)
 	if err != nil {
 		return nil, handleError(err)
 	}
@@ -247,7 +247,7 @@ func (api *APIHandler) UpdateStatus(ctx context.Context, req *connect.Request[v1
 // DeleteStatus deletes a Status
 func (api *APIHandler) DeleteStatus(ctx context.Context, req *connect.Request[v1.DeleteStatusRequest]) (*connect.Response[v1.DeleteStatusResponse], error) {
 	statusID := req.Msg.GetStatusId()
-	if err := api.sts.DeleteStatus(ctx, statusID); err != nil {
+	if err := api.sts.RemoveStatus(ctx, statusID); err != nil {
 		return nil, handleError(err)
 	}
 	return &connect.Response[v1.DeleteStatusResponse]{}, nil

@@ -6,11 +6,12 @@
     {{ template "navbar" . }}
     <div class="container" id="{{ .ContentDiv }}">
         {{ block "list-status-ui" . }}
+
+        {{ if not .LoggedIn }}
+        {{ template "login-ui" . }}
+        {{ else }}
         <div class="columns is-centered">
             <div class="column is-full">
-                {{ if not .LoggedIn }}
-                {{ template "login-ui" . }}
-                {{ else }}
                 <table class="table">
                     <thead>
                         <tr>
@@ -32,11 +33,16 @@
                                 <pre>{{ .Id }}</pre>
                             </td>
                             <td>{{ .Name }}</td>
+                            {{ if not .Description }}
+                            <td><a class="navbar-item" href="#" id="{{ .Id }}" name="add-status-description"><i
+                                        class="material-icons">add</i></a></td>
+                            {{ else }}
                             <td>{{ .Description }}</td>
+                            {{ end }}
                             <td style="background-color:  {{ .Color }};">{{ .Color }}</td>
                             <td>{{ .Kind }}</td>
-                            <td><a class="navbar-item" href="#" hx-get="login" hx-target="#content"><i
-                                        class="material-icons">edit</i></a></td>
+                            <td><a class="navbar-item" href="#" hx-get="add-status-ui" hx-target="#content"
+                                    hx-replace-url="add-status.html"><i class="material-icons">edit</i></a></td>
                             <td><a class="navbar-item" href="#" hx-post="delete-status" hx-target="#content"
                                     hx-confirm="are you sure?" name="delete-status" id="{{ .Id }}"><i
                                         class="material-icons">delete</i></a></td>
@@ -44,9 +50,10 @@
                         {{ end }}
                     </tbody>
                 </table>
-                {{ end }}
             </div>
         </div>
+        {{ end }}
+
         {{ end }}
     </div>
 </body>

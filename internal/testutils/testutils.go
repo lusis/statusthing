@@ -56,6 +56,18 @@ func MakeStatus(uval string) *statusthingv1.Status {
 	}
 }
 
+// MakeUser makes a valid minimal [statusthingv1.User] for tests
+// uval is generally the name of the current test (t.Name()) if determinism is needed
+// but can be any value to use as the base for any string values
+func MakeUser(uval string) *statusthingv1.User {
+	return &statusthingv1.User{
+		Id:         uval + "_id",
+		Username:   uval + "_username",
+		Password:   uval + "_password",
+		Timestamps: MakeTimestamps(false),
+	}
+}
+
 // LogAll is used to log items at the end of a test if desired
 func LogAll(t *testing.T, logged map[string]any) {
 	for name, l := range logged {

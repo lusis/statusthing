@@ -9,3 +9,6 @@ plugins:
   - plugin: buf.build/grpc/go
     out: gen/go
     opt: paths=source_relative
+      #  - plugin: gotemplate
+      #out: gen/template
+      #opt: debug=true,template_dir=./test-gen/templates,all=true,destination_dir=./test-gen/output

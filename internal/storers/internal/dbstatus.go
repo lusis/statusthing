@@ -7,6 +7,8 @@ import (
 	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/storers"
 	"github.com/lusis/statusthing/internal/validation"
+
+	"google.golang.org/protobuf/proto"
 )
 
 // DbStatus represents a common representation of a [statusthingv1.Status] in a db
@@ -33,10 +35,6 @@ func DbStatusFromProto(pbstatus *statusthingv1.Status) (*DbStatus, error) {
 		return nil, serrors.NewError("kind", serrors.ErrEmptyEnum)
 	}
 
-	if pbstatus.GetTimestamps() == nil {
-		return nil, serrors.NewError("timestamps", serrors.ErrMissingTimestamp)
-	}
-
 	dbs := &DbStatus{
 		DbCommon: dbCommon,
 		Kind:     storers.StringPtr(kind.String()),
@@ -48,7 +46,7 @@ func DbStatusFromProto(pbstatus *statusthingv1.Status) (*DbStatus, error) {
 }
 
 // ToProto converts a [DbStatus] to a [statusthingv1.Status]
-func (s *DbStatus) ToProto() (*statusthingv1.Status, error) {
+func (s *DbStatus) ToProto() (proto.Message, error) {
 	res := &statusthingv1.Status{
 		Timestamps: &statusthingv1.Timestamps{},
 	}

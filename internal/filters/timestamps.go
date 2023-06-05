@@ -2,6 +2,7 @@ package filters
 
 import (
 	"fmt"
+	"time"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 	"github.com/lusis/statusthing/internal/serrors"
@@ -40,4 +41,25 @@ func WithTimestamps(ts *statusthingv1.Timestamps) FilterOption {
 		f.timestamps = ts
 		return nil
 	}
+}
+
+// WithLastLogin sets the last login
+func WithLastLogin(lastlogin *time.Time) FilterOption {
+	return func(f *Filters) error {
+		if lastlogin == nil {
+			return serrors.NewError("lastlogin", serrors.ErrNilVal)
+		}
+		if f.lastlogin != nil {
+			return serrors.NewError("lastlogin", serrors.ErrAlreadySet)
+		}
+		f.lastlogin = lastlogin
+		return nil
+	}
+}
+
+// LastLogin gets the last login
+func (f *Filters) LastLogin() *time.Time {
+	f.l.RLock()
+	defer f.l.RUnlock()
+	return f.lastlogin
 }

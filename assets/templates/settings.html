@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" class="has-navbar-fixed-top">
+{{ template "head" . }}
+
+<body>
+    {{ template "navbar" . }}
+    <div class="container" id="{{ .ContentDiv }}">
+        {{ block "settings-ui" . }}
+        <div class="columns is-centered">
+            <div class="column is-full">
+                {{ if not .LoggedIn }}
+                {{ template "login-ui" . }}
+                {{ else }}
+                <div class="columns is-centered">
+                    <div class="column is-full">
+                        Settings
+                    </div>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+        {{ end }}
+    </div>
+</body>
+
+</html>

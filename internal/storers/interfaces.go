@@ -16,6 +16,21 @@ type StatusThingStorer interface {
 	NoteStorer
 	StatusStorer
 	ItemStorer
+	UserStorer
+}
+
+// UserStorer stores [v1.User]
+type UserStorer interface {
+	// StoreUser stores the provied [v1.User]
+	StoreUser(ctx context.Context, user *v1.User) (*v1.User, error)
+	// GetUser gets a [v1.User] by username
+	GetUser(ctx context.Context, username string) (*v1.User, error)
+	// FindUsers finds users
+	FindUsers(ctx context.Context, opts ...filters.FilterOption) ([]*v1.User, error)
+	// UpdateUser updates a [v1.User]
+	UpdateUser(ctx context.Context, username string, opts ...filters.FilterOption) error
+	// DeleteUser deletes a [v1.User]
+	DeleteUser(ctx context.Context, username string) error
 }
 
 // ItemStorer storers [statusthingv1.Item]

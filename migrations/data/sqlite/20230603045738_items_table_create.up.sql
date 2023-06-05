@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS items
+	(
+		id VARCHAR(191) PRIMARY KEY,
+		name VARCHAR(191) NOT NULL UNIQUE,
+		description VARCHAR(191) DEFAULT NULL,
+		status_id VARCHAR(191) DEFAULT NULL,
+		created INT NOT NULL,
+		updated INT NOT NULL,
+		deleted INT DEFAULT NULL,
+		FOREIGN KEY(status_id) REFERENCES status(id)
+	);

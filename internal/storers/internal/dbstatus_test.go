@@ -168,14 +168,17 @@ func TestStatusToProto(t *testing.T) {
 					Color: storers.StringPtr(t.Name()),
 				}
 			}
-			s, serr := dbstatus.ToProto()
+			pb, serr := dbstatus.ToProto()
+
 			if tc.err != nil {
 				require.ErrorIs(t, serr, tc.err)
-				require.Nil(t, s)
+				require.Nil(t, pb)
 				if validation.ValidString(tc.errtext) {
 					require.ErrorContains(t, serr, tc.errtext)
 				}
 			} else {
+				s, ok := pb.(*statusthingv1.Status)
+				require.True(t, ok)
 				require.NoError(t, serr)
 				require.NotNil(t, s)
 				require.Equal(t, dbstatus.ID, s.GetId())

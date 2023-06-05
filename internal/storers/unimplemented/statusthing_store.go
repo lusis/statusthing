@@ -5,4 +5,5 @@ type StatusThingStore struct {
 	*NoteStorer
 	*StatusStore
 	*ItemStore
+	*UserStore
 }

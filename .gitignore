@@ -21,6 +21,6 @@ config.yaml
 .cache/
 go-sqlite3-test-*
 *.db
-data/
+./data/
 fly.toml
 *.sqlite

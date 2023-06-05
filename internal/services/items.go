@@ -12,14 +12,14 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-// NewItem creates a new item with the provided name
+// AddItem creates a new item with the provided name
 // Supported options:
 // - [filters.WithStatusID] set the initial status to the [statusthingv1.Status] with provided status id
 // - [filters.WithDescription] sets the optional description of the [statusthingv1.Item]
 // - [filters.WithItemID] sets a custom unique id. default is generated via [ksuid.New().String()]
 // - [filters.WithNoteText] sets the note text for an initial note to create along with the item
 // - [filters.WithStatus] creates a new [statusthingv1.Status] before creating the item and sets the items status to that new status
-func (sts *StatusThingService) NewItem(ctx context.Context, name string, opts ...filters.FilterOption) (*statusthingv1.Item, error) {
+func (sts *StatusThingService) AddItem(ctx context.Context, name string, opts ...filters.FilterOption) (*statusthingv1.Item, error) {
 	if sts.store == nil {
 		return nil, serrors.NewError("store", serrors.ErrStoreUnavailable)
 	}
@@ -73,7 +73,7 @@ func (sts *StatusThingService) NewItem(ctx context.Context, name string, opts ..
 	}
 
 	if validation.ValidString(noteText) {
-		_, nerr := sts.NewNote(ctx, res.GetId(), f.NoteText())
+		_, nerr := sts.AddNote(ctx, res.GetId(), f.NoteText())
 		if nerr != nil {
 			return nil, nerr
 		}
@@ -91,8 +91,8 @@ func (sts *StatusThingService) EditItem(ctx context.Context, itemID string, opts
 	return sts.store.UpdateItem(ctx, itemID, opts...)
 }
 
-// DeleteItem removes a [statusthingv1.Item] by its unique id
-func (sts *StatusThingService) DeleteItem(ctx context.Context, itemID string) error {
+// RemoveItem removes a [statusthingv1.Item] by its unique id
+func (sts *StatusThingService) RemoveItem(ctx context.Context, itemID string) error {
 	if sts.store == nil {
 		return serrors.NewError("store", serrors.ErrStoreUnavailable)
 	}

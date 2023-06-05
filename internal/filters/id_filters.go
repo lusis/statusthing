@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/lusis/statusthing/internal/serrors"
+	"github.com/lusis/statusthing/internal/validation"
 )
 
 // WithItemID provides a custom [statusthingv1.StatusThing] id
@@ -96,4 +97,25 @@ func (f *Filters) StatusIDs() []string {
 	f.l.RLock()
 	defer f.l.RUnlock()
 	return f.statusIDs
+}
+
+// WithUserID provides a custom [v1.User] id
+func WithUserID(id string) FilterOption {
+	return func(f *Filters) error {
+		if !validation.ValidString(id) {
+			return serrors.NewError("userid", serrors.ErrEmptyString)
+		}
+		if f.userid != nil {
+			return serrors.NewError("userid", serrors.ErrAlreadySet)
+		}
+		f.userid = &id
+		return nil
+	}
+}
+
+// UserID returns the configured [v1.User] id
+func (f *Filters) UserID() string {
+	f.l.RLock()
+	defer f.l.RUnlock()
+	return safeString(f.userid)
 }

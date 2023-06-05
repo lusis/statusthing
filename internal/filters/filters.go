@@ -2,6 +2,7 @@ package filters
 
 import (
 	"sync"
+	"time"
 
 	statusthingv1 "github.com/lusis/statusthing/gen/go/statusthing/v1"
 )
@@ -41,6 +42,22 @@ type Filters struct {
 	status *statusthingv1.Status
 	// name stores a custom name value
 	name *string
+	// userid stores a custom userid value
+	userid *string
+	// firstname stores a custom firstname value
+	firstname *string
+	// lastname stores a custom lastname value
+	lastname *string
+	// emailaddress stores a custom email address
+	emailaddress *string
+	// lastlogin store the lastlogin
+	lastlogin *time.Time
+	// avatarURL stores the avatar url
+	avatarURL *string
+	// avatar stores the avatar image
+	avatar []byte
+	// stores a new password for a password change
+	password *string
 }
 
 // New returns a new [Filters] configured with the provided [FilterOption]

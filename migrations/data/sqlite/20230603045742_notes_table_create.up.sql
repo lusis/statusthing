@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS notes
+	(
+		id VARCHAR(191) PRIMARY KEY,
+		note_text VARCHAR(191) NOT NULL UNIQUE,
+		item_id VARCHAR(191) NOT NULL,
+		created INT NOT NULL,
+		updated INT NOT NULL,
+		deleted INT DEFAULT NULL,
+		FOREIGN KEY(item_id) REFERENCES items(id)
+	);

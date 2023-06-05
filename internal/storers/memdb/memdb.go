@@ -2,10 +2,12 @@ package memdb
 
 import (
 	"context"
-	"database/sql"
+	"os"
 
-	"github.com/lusis/statusthing/internal/serrors"
 	"github.com/lusis/statusthing/internal/storers/sqlite"
+	"github.com/lusis/statusthing/migrations"
+
+	"golang.org/x/exp/slog"
 )
 
 // Store is an in-memory store
@@ -13,12 +15,9 @@ type Store = sqlite.Store
 
 // New returns a new [Store]
 func New() (*Store, error) {
-	db, err := sql.Open("sqlite3", ":memory:")
+	db, err := migrations.MigrateDatabase(context.TODO(), "sqlite3", ":memory:", slog.NewTextHandler(os.Stdout, nil))
 	if err != nil {
 		return nil, err
-	}
-	if err := sqlite.CreateTables(context.TODO(), db); err != nil {
-		return nil, serrors.NewWrappedError("create-tables", serrors.ErrStoreUnavailable, err)
 	}
 
 	return sqlite.New(db)
